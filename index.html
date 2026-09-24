@@ -4,16 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Lapisan Keamanan Ekstra: Content Security Policy (CSP) -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:;">
-    <!-- Mencegah sniffing tipe konten -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com;">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     
-    <title>FlowGuard - Worktime & Hydration Reminder</title>
+    <title>FlowGuard - Worktime, Hydration & Work Tracker</title>
     
-    <!-- Favicon Logo -->
     <link rel="icon" href="FlowGuard Logo's.png" type="image/png">
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -57,7 +53,7 @@
 
         .container {
             width: 100%;
-            max-width: 460px;
+            max-width: 480px;
             display: flex;
             flex-direction: column;
             gap: 16px;
@@ -69,22 +65,61 @@
             padding: 6px 0;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 14px;
+            justify-content: space-between;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .header-logo-img {
-            height: 56px;
+            height: 42px;
             width: auto;
             object-fit: contain;
             filter: drop-shadow(0 4px 12px rgba(137, 180, 250, 0.25));
         }
 
         .header h1 {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
             letter-spacing: -0.5px;
             color: var(--fg-text);
+        }
+
+        /* Auth Bar */
+        .auth-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--btn-blue);
+        }
+
+        .btn-auth {
+            background-color: var(--bg-frame);
+            border: 1px solid var(--border-color);
+            color: var(--fg-text);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-auth:hover {
+            border-color: var(--btn-blue);
+            color: var(--btn-blue);
         }
 
         /* Card Section */
@@ -141,10 +176,6 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .btn:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
         .btn:disabled {
             background-color: var(--disabled-bg) !important;
             color: var(--subtext) !important;
@@ -155,6 +186,13 @@
         .btn-blue { background-color: var(--btn-blue); }
         .btn-red { background-color: var(--btn-red); }
         .btn-green { background-color: var(--btn-green); }
+        .btn-stop { 
+            background-color: var(--btn-red); 
+            color: #11111b; 
+            width: 100%; 
+            margin-top: 10px;
+            display: none;
+        }
 
         /* Custom Form */
         .custom-form {
@@ -182,7 +220,7 @@
             color: var(--subtext);
         }
 
-        .input-field {
+        .input-field, .textarea-field {
             background-color: var(--bg-frame);
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -194,13 +232,13 @@
             transition: border-color 0.2s;
         }
 
-        .input-field:focus {
-            border-color: var(--btn-blue);
+        .textarea-field {
+            resize: vertical;
+            min-height: 60px;
         }
 
-        .input-field:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .input-field:focus, .textarea-field:focus {
+            border-color: var(--btn-blue);
         }
 
         /* Status Widget */
@@ -267,7 +305,6 @@
         .sys-log.green { color: var(--btn-green); }
         .sys-log.yellow { color: var(--accent-yellow); }
 
-        /* Timer Badge */
         .timer-badge {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--border-color);
@@ -280,13 +317,64 @@
             display: none;
         }
 
-        /* Footer */
-        .footer {
-            text-align: center;
-            font-size: 11px;
-            color: var(--subtext);
-            opacity: 0.7;
+        /* Logs History Section */
+        .logs-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 240px;
+            overflow-y: auto;
+            margin-top: 6px;
         }
+
+        .log-item {
+            background-color: var(--bg-frame);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--subtext);
+            font-size: 11px;
+        }
+
+        .log-duration {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: var(--btn-blue);
+        }
+
+        .log-task {
+            color: var(--fg-text);
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .log-doc {
+            color: var(--btn-green);
+            text-decoration: none;
+            word-break: break-all;
+            font-size: 11px;
+        }
+
+        .badge-storage {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .badge-cloud { background: rgba(166, 227, 161, 0.2); color: var(--btn-green); }
+        .badge-local { background: rgba(249, 226, 175, 0.2); color: var(--accent-yellow); }
 
         /* Modal Overlay */
         .modal-overlay {
@@ -318,7 +406,7 @@
             border-radius: 16px;
             padding: 20px;
             width: 100%;
-            max-width: 360px;
+            max-width: 380px;
             text-align: center;
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
             transform: scale(0.95);
@@ -342,6 +430,7 @@
             margin-bottom: 18px;
             line-height: 1.5;
             white-space: pre-wrap; 
+            text-align: left;
         }
 
         .modal-actions {
@@ -363,17 +452,12 @@
         .modal-btn-primary { background-color: var(--btn-blue); color: #11111b; }
         .modal-btn-green { background-color: var(--btn-green); color: #11111b; }
         .modal-btn-secondary { background-color: var(--bg-input); color: var(--fg-text); }
-        
-        @media (max-width: 380px) {
-            .preset-grid, .form-row {
-                grid-template-columns: 1fr;
-            }
-            .header-logo-img {
-                height: 46px;
-            }
-            .header h1 {
-                font-size: 24px;
-            }
+
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            color: var(--subtext);
+            opacity: 0.7;
         }
     </style>
 </head>
@@ -382,8 +466,13 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <img src="FlowGuard Logo's.png" alt="FlowGuard Logo" class="header-logo-img" onerror="this.style.display='none'">
-            <h1>FlowGuard</h1>
+            <div class="header-brand">
+                <img src="FlowGuard Logo's.png" alt="FlowGuard Logo" class="header-logo-img" onerror="this.style.display='none'">
+                <h1>FlowGuard</h1>
+            </div>
+            <div class="auth-status" id="auth-container">
+                <button class="btn-auth" id="btn-login">Login Google</button>
+            </div>
         </div>
 
         <!-- Quick Mode -->
@@ -428,6 +517,15 @@
             </div>
 
             <div id="timer-badge" class="timer-badge">Remaining: <span id="time-left">00:00:00</span></div>
+            <button id="btn-stop-work" class="btn btn-stop" onclick="stopWorkSession()">Stop Working & Save Log</button>
+        </div>
+
+        <!-- Work History Logs -->
+        <div class="card">
+            <div class="card-title">Riwayat Kerja</div>
+            <div class="logs-container" id="logs-container">
+                <div style="text-align: center; color: var(--subtext); font-size: 12px; padding: 12px;">Belum ada riwayat kerja tersimpan.</div>
+            </div>
         </div>
 
         <!-- Footer -->
@@ -436,19 +534,77 @@
         </div>
     </div>
 
-    <!-- Modal Popup -->
+    <!-- Dynamic Modal -->
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-box">
             <div id="modal-title" class="modal-title">FlowGuard</div>
-            <div id="modal-body" class="modal-body">Message text here</div>
+            <div id="modal-body" class="modal-body"></div>
             <div id="modal-actions" class="modal-actions"></div>
         </div>
     </div>
 
-    <script>
+    <!-- Firebase SDK Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDa1BQzIYtMu5kDmWZyd-DiludUqrmQZC0",
+            authDomain: "flowguard-web.firebaseapp.com",
+            projectId: "flowguard-web",
+            storageBucket: "flowguard-web.firebasestorage.app",
+            messagingSenderId: "10592671311",
+            appId: "1:10592671311:web:6b1df4e0fd10cdcf62fc3a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        let currentUser = null;
+
+        // UI Auth Controls
+        const authContainer = document.getElementById('auth-container');
+        const btnLogin = document.getElementById('btn-login');
+
+        btnLogin.addEventListener('click', async () => {
+            initAudio();
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (err) {
+                console.error("Login Error:", err);
+            }
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (user) {
+                authContainer.innerHTML = `
+                    <img src="${user.photoURL}" alt="${user.displayName}" class="user-avatar">
+                    <button class="btn-auth" id="btn-logout">Logout</button>
+                `;
+                document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+                await syncLocalLogsToCloud();
+            } else {
+                authContainer.innerHTML = `<button class="btn-auth" id="btn-login-dynamic">Login Google</button>`;
+                document.getElementById('btn-login-dynamic').addEventListener('click', () => signInWithPopup(auth, provider));
+            }
+            renderLogs();
+        });
+
+        // App System State
+        let isRunning = false;
+        let countdownInterval = null;
+        let workStartTime = null;
+        let audioCtx = null;
+        let alarmInterval = null;
+
         const btnPreset1 = document.getElementById('btn-preset-1');
         const btnPreset2 = document.getElementById('btn-preset-2');
         const btnCustom = document.getElementById('btn-custom');
+        const btnStopWork = document.getElementById('btn-stop-work');
         const customHourInput = document.getElementById('custom-hour');
         const customBreakInput = document.getElementById('custom-break');
         
@@ -458,25 +614,18 @@
         const timerBadge = document.getElementById('timer-badge');
         const timeLeftSpan = document.getElementById('time-left');
         const pulseDot = document.getElementById('pulse-dot');
+        const logsContainer = document.getElementById('logs-container');
 
         const modalOverlay = document.getElementById('custom-modal');
         const modalTitle = document.getElementById('modal-title');
         const modalBody = document.getElementById('modal-body');
         const modalActions = document.getElementById('modal-actions');
 
-        let isRunning = false;
-        let countdownInterval = null;
-        
-        // --- Sistem Audio Alarm Terus-Menerus ---
-        let audioCtx = null;
-        let alarmInterval = null;
-
+        // Audio System
         function initAudio() {
             if (!audioCtx) {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (AudioContext) {
-                    audioCtx = new AudioContext();
-                }
+                if (AudioContext) audioCtx = new AudioContext();
             }
             if (audioCtx && audioCtx.state === 'suspended') {
                 audioCtx.resume();
@@ -498,21 +647,18 @@
                     osc.start(audioCtx.currentTime + startTime);
                     osc.stop(audioCtx.currentTime + startTime + duration);
                 };
-
-                // Bunyi chime 3-nada
-                playNote(523.25, 0.0, 0.25); // C5
-                playNote(659.25, 0.15, 0.25); // E5
-                playNote(783.99, 0.30, 0.40); // G5
+                playNote(523.25, 0.0, 0.25);
+                playNote(659.25, 0.15, 0.25);
+                playNote(783.99, 0.30, 0.40);
             } catch (e) {
                 console.log('Audio error:', e);
             }
         }
 
         function startAlarmLoop() {
-            initAudio(); // Pastikan konteks audio terbuka
+            initAudio();
             if (alarmInterval) clearInterval(alarmInterval);
-            playMelody(); // Putar pertama kali
-            // Ulangi terus menerus setiap 1.5 detik sampai tombol diklik
+            playMelody();
             alarmInterval = setInterval(playMelody, 1500); 
         }
 
@@ -522,7 +668,6 @@
                 alarmInterval = null;
             }
         }
-        // ----------------------------------------
 
         function formatSeconds(sec) {
             const h = Math.floor(sec / 3600).toString().padStart(2, '0');
@@ -535,6 +680,54 @@
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
+        function showCustomModal(title, textOrHtml, buttons) {
+            return new Promise((resolve) => {
+                startAlarmLoop();
+                modalTitle.textContent = title;
+                if (typeof textOrHtml === 'string' && !textOrHtml.includes('<')) {
+                    modalBody.textContent = textOrHtml;
+                } else {
+                    modalBody.innerHTML = textOrHtml;
+                }
+                modalActions.innerHTML = '';
+
+                buttons.forEach(btnConfig => {
+                    const btn = document.createElement('button');
+                    btn.className = `modal-btn ${btnConfig.class || 'modal-btn-primary'}`;
+                    btn.textContent = btnConfig.text;
+                    btn.onclick = () => {
+                        stopAlarmLoop();
+                        modalOverlay.classList.remove('active');
+                        resolve(btnConfig.value ? btnConfig.value() : true);
+                    };
+                    modalActions.appendChild(btn);
+                });
+
+                modalOverlay.classList.add('active');
+            });
+        }
+
+        async function showAlert(text, title = "FlowGuard") {
+            return showCustomModal(title, text, [{ text: 'OK', value: () => true, class: 'modal-btn-primary' }]);
+        }
+
+        function setUILock(locked) {
+            btnPreset1.disabled = locked;
+            btnPreset2.disabled = locked;
+            btnCustom.disabled = locked;
+            customHourInput.disabled = locked;
+            customBreakInput.disabled = locked;
+            
+            if (locked) {
+                pulseDot.classList.add('active');
+                btnStopWork.style.display = 'block';
+            } else {
+                pulseDot.classList.remove('active');
+                btnStopWork.style.display = 'none';
+                timerBadge.style.display = 'none';
+            }
+        }
+
         function startCountdown(seconds) {
             return new Promise((resolve) => {
                 let remaining = seconds;
@@ -544,6 +737,11 @@
                 if (countdownInterval) clearInterval(countdownInterval);
 
                 countdownInterval = setInterval(() => {
+                    if (!isRunning) {
+                        clearInterval(countdownInterval);
+                        resolve();
+                        return;
+                    }
                     remaining--;
                     timeLeftSpan.textContent = formatSeconds(remaining);
 
@@ -556,50 +754,165 @@
             });
         }
 
-        function showCustomModal(title, text, buttons) {
-            return new Promise((resolve) => {
-                // Mulai mainkan alarm berulang saat modal muncul
-                startAlarmLoop();
+        // Local & Cloud Storage Sync Logic
+        function getLocalLogs() {
+            return JSON.parse(localStorage.getItem('flowguard_logs') || '[]');
+        }
 
-                modalTitle.textContent = title;
-                modalBody.textContent = text; 
-                modalActions.innerHTML = '';
+        function saveLocalLog(log) {
+            const logs = getLocalLogs();
+            logs.unshift(log);
+            localStorage.setItem('flowguard_logs', JSON.stringify(logs));
+        }
 
-                buttons.forEach(btnConfig => {
-                    const btn = document.createElement('button');
-                    btn.className = `modal-btn ${btnConfig.class || 'modal-btn-primary'}`;
-                    btn.textContent = btnConfig.text;
-                    btn.onclick = () => {
-                        // Hentikan alarm saat user mengklik tombol apapun
-                        stopAlarmLoop();
-                        modalOverlay.classList.remove('active');
-                        resolve(btnConfig.value);
-                    };
-                    modalActions.appendChild(btn);
+        async function syncLocalLogsToCloud() {
+            if (!currentUser) return;
+            const localLogs = getLocalLogs();
+            if (localLogs.length === 0) return;
+
+            for (const log of localLogs) {
+                try {
+                    await addDoc(collection(db, "work_logs"), {
+                        userId: currentUser.uid,
+                        durationFormatted: log.durationFormatted,
+                        secondsWorked: log.secondsWorked,
+                        taskDescription: log.taskDescription,
+                        docLink: log.docLink,
+                        createdAt: new Date(log.timestamp)
+                    });
+                } catch (e) {
+                    console.error("Gagal migrasi data ke cloud:", e);
+                }
+            }
+            localStorage.removeItem('flowguard_logs');
+        }
+
+        async function saveWorkLog(secondsWorked, taskDescription, docLink) {
+            const durationFormatted = formatSeconds(secondsWorked);
+            const timestamp = new Date().toISOString();
+
+            if (currentUser) {
+                await addDoc(collection(db, "work_logs"), {
+                    userId: currentUser.uid,
+                    durationFormatted,
+                    secondsWorked,
+                    taskDescription,
+                    docLink,
+                    createdAt: serverTimestamp()
                 });
+            } else {
+                saveLocalLog({
+                    id: Date.now().toString(),
+                    durationFormatted,
+                    secondsWorked,
+                    taskDescription,
+                    docLink,
+                    timestamp
+                });
+            }
+            renderLogs();
+        }
 
-                modalOverlay.classList.add('active');
+        async function renderLogs() {
+            logsContainer.innerHTML = '';
+
+            let logs = [];
+            if (currentUser) {
+                try {
+                    const q = query(
+                        collection(db, "work_logs"), 
+                        where("userId", "==", currentUser.uid),
+                        orderBy("createdAt", "desc")
+                    );
+                    const querySnapshot = await getDocs(q);
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        logs.push({
+                            ...data,
+                            isCloud: true,
+                            dateStr: data.createdAt ? new Date(data.createdAt.toDate()).toLocaleString() : new Date().toLocaleString()
+                        });
+                    });
+                } catch (e) {
+                    console.error("Gagal mengambil log dari cloud:", e);
+                }
+            } else {
+                logs = getLocalLogs().map(l => ({
+                    ...l,
+                    isCloud: false,
+                    dateStr: new Date(l.timestamp).toLocaleString()
+                }));
+            }
+
+            if (logs.length === 0) {
+                logsContainer.innerHTML = `<div style="text-align: center; color: var(--subtext); font-size: 12px; padding: 12px;">Belum ada riwayat kerja tersimpan.</div>`;
+                return;
+            }
+
+            logs.forEach(log => {
+                const el = document.createElement('div');
+                el.className = 'log-item';
+                el.innerHTML = `
+                    <div class="log-header">
+                        <span>${log.dateStr}</span>
+                        <div style="display:flex; gap:6px; align-items:center;">
+                            <span class="log-duration">${log.durationFormatted}</span>
+                            <span class="badge-storage ${log.isCloud ? 'badge-cloud' : 'badge-local'}">${log.isCloud ? 'Cloud' : 'Lokal'}</span>
+                        </div>
+                    </div>
+                    <div class="log-task">${log.taskDescription || 'Tanpa deskripsi pekerjaan'}</div>
+                    ${log.docLink ? `<a href="${log.docLink}" target="_blank" class="log-doc">Dokumentasi: ${log.docLink}</a>` : ''}
+                `;
+                logsContainer.appendChild(el);
             });
         }
 
-        async function showAlert(text, title = "FlowGuard") {
-            return showCustomModal(title, text, [{ text: 'OK', value: true, class: 'modal-btn-primary' }]);
-        }
+        // Stop Work Handler
+        window.stopWorkSession = async function() {
+            isRunning = false;
+            if (countdownInterval) clearInterval(countdownInterval);
 
-        function setUILock(locked) {
-            btnPreset1.disabled = locked;
-            btnPreset2.disabled = locked;
-            btnCustom.disabled = locked;
-            customHourInput.disabled = locked;
-            customBreakInput.disabled = locked;
-            
-            if (locked) {
-                pulseDot.classList.add('active');
-            } else {
-                pulseDot.classList.remove('active');
-            }
-        }
+            const secondsWorked = workStartTime ? Math.floor((Date.now() - workStartTime) / 1000) : 0;
+            const durationFormatted = formatSeconds(secondsWorked);
 
+            const formHtml = `
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <div><strong>Durasi Kerja:</strong> ${durationFormatted}</div>
+                    <div class="form-group">
+                        <label for="modal-task">Apa yang sudah kamu kerjakan?</label>
+                        <textarea id="modal-task" class="textarea-field" placeholder="Contoh: Menyelesaikan revisi modul login"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-doc">Link Dokumentasi (Opsional)</label>
+                        <input type="url" id="modal-doc" class="input-field" placeholder="https://notion.so/... atau Link Drive">
+                    </div>
+                </div>
+            `;
+
+            await showCustomModal(
+                "Simpan Riwayat Kerja",
+                formHtml,
+                [
+                    { 
+                        text: 'Simpan', 
+                        class: 'modal-btn-green',
+                        value: () => {
+                            const task = document.getElementById('modal-task').value.trim();
+                            const doc = document.getElementById('modal-doc').value.trim();
+                            saveWorkLog(secondsWorked, task, doc);
+                        }
+                    },
+                    { text: 'Batal', class: 'modal-btn-secondary', value: () => false }
+                ]
+            );
+
+            labelStatus.textContent = "Sesi kerja dihentikan.";
+            labelSys.textContent = "";
+            labelBack.textContent = "";
+            setUILock(false);
+        };
+
+        // Main Program Execution Loop
         async function process(mode, workDurationSeconds, breakDurationSeconds, breakText) {
             let workHour = 1;
 
@@ -608,16 +921,15 @@
                 const currentHour = now.getHours();
                 const currentMinute = now.getMinutes().toString().padStart(2, '0');
                 
-                const infoText = `===== Information =====\nThis is work hour #${workHour}\nStarted at ${currentHour.toString().padStart(2, '0')}:${currentMinute}\n=====================`;
-                labelStatus.textContent = infoText;
+                labelStatus.textContent = `===== Information =====\nThis is work hour #${workHour}\nStarted at ${currentHour.toString().padStart(2, '0')}:${currentMinute}\n=====================`;
 
                 if (currentHour >= 0 && currentHour < 5) {
                     const askSleep = await showCustomModal(
                         "System Warning", 
                         "It's past 00:00, time to sleep.\nShutdown?", 
                         [
-                            { text: 'OK (Shutdown)', value: 'OK', class: 'modal-btn-primary' },
-                            { text: 'No', value: 'No', class: 'modal-btn-secondary' }
+                            { text: 'OK (Shutdown)', value: () => 'OK', class: 'modal-btn-primary' },
+                            { text: 'No', value: () => 'No', class: 'modal-btn-secondary' }
                         ]
                     );
 
@@ -631,20 +943,22 @@
                 }
 
                 await startCountdown(workDurationSeconds);
+                if (!isRunning) break;
 
                 if (workDurationSeconds >= 3600) {
                     await showAlert("One hour has passed...", "FlowGuard");
                 } else {
                     await showAlert("Custom work time has passed...", "FlowGuard");
                 }
+                if (!isRunning) break;
 
                 while (isRunning) {
                     const askWater = await showCustomModal(
                         "Hydration Reminder",
                         "Have you drank water?",
                         [
-                            { text: 'Yes', value: 'Yes', class: 'modal-btn-green' },
-                            { text: 'Not yet', value: 'Not yet', class: 'modal-btn-secondary' }
+                            { text: 'Yes', value: () => 'Yes', class: 'modal-btn-green' },
+                            { text: 'Not yet', value: () => 'Not yet', class: 'modal-btn-secondary' }
                         ]
                     );
 
@@ -657,6 +971,7 @@
                         await startCountdown(300);
                     }
                 }
+                if (!isRunning) break;
 
                 if (breakDurationSeconds > 0) {
                     await showAlert(`Time to take a break for ${breakText}..`, "FlowGuard");
@@ -669,6 +984,7 @@
                     labelBack.textContent = `SYSTEM : Back to work at ${returnH}:${returnM}`;
 
                     await startCountdown(breakDurationSeconds);
+                    if (!isRunning) break;
 
                     await showAlert("Break time is over, let's get back to work boss!", "FlowGuard");
                     labelBack.textContent = "";
@@ -681,8 +997,8 @@
             }
         }
 
-        function startProgram(mode) {
-            initAudio(); // Inisialisasi audio dari interaksi pertama user (menghindari error autoplay)
+        window.startProgram = function(mode) {
+            initAudio();
 
             let workDurationSeconds = 3600;
             let breakDurationSeconds = 0;
@@ -714,9 +1030,13 @@
             }
 
             isRunning = true;
+            workStartTime = Date.now();
             setUILock(true);
             process(mode, workDurationSeconds, breakDurationSeconds, breakText);
-        }
+        };
+
+        // Initial Load Render
+        renderLogs();
     </script>
 </body>
 </html>

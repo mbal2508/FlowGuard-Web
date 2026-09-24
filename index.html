@@ -341,7 +341,6 @@
             color: var(--fg-text);
             margin-bottom: 18px;
             line-height: 1.5;
-            /* Perubahan: white-space pre-wrap memastikan teks baru terender dengan aman tanpa tag HTML */
             white-space: pre-wrap; 
         }
 
@@ -392,7 +391,7 @@
             <div class="card-title">Quick Mode</div>
             <div class="preset-grid">
                 <button id="btn-preset-1" class="btn btn-blue" onclick="startProgram('with_break')">1 Hr Work, 30 Min Break</button>
-                <button id="btn-preset-2" class="btn btn-red" onclick="startProgram('no_break')">Work 1 Hr Without Break</button>
+                <button id="btn-preset-2" class="btn btn-red" onclick="startProgram('no_break')">Work Without Break</button>
             </div>
         </div>
 
@@ -403,7 +402,6 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="custom-hour">Work Hours</label>
-                        <!-- Perubahan: Pembatasan max="24" agar user tidak mengeksploitasi timer -->
                         <input type="number" id="custom-hour" class="input-field" placeholder="1 or 1.5" step="0.1" min="0.1" max="24" oninput="if(this.value>24)this.value=24;">
                     </div>
                     <div class="form-group">
@@ -468,13 +466,63 @@
 
         let isRunning = false;
         let countdownInterval = null;
+        
+        // --- Sistem Audio Alarm Terus-Menerus ---
+        let audioCtx = null;
+        let alarmInterval = null;
 
-        // Sanitasi teks utilitas (Mencegah XSS pada tag log yang mungkin di injeksi nanti)
-        function sanitizeText(str) {
-            const temp = document.createElement('div');
-            temp.textContent = str;
-            return temp.innerHTML;
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtx = new AudioContext();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         }
+
+        function playMelody() {
+            if (!audioCtx) return;
+            try {
+                const playNote = (freq, startTime, duration) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + startTime);
+                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime + startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + startTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + startTime);
+                    osc.stop(audioCtx.currentTime + startTime + duration);
+                };
+
+                // Bunyi chime 3-nada
+                playNote(523.25, 0.0, 0.25); // C5
+                playNote(659.25, 0.15, 0.25); // E5
+                playNote(783.99, 0.30, 0.40); // G5
+            } catch (e) {
+                console.log('Audio error:', e);
+            }
+        }
+
+        function startAlarmLoop() {
+            initAudio(); // Pastikan konteks audio terbuka
+            if (alarmInterval) clearInterval(alarmInterval);
+            playMelody(); // Putar pertama kali
+            // Ulangi terus menerus setiap 1.5 detik sampai tombol diklik
+            alarmInterval = setInterval(playMelody, 1500); 
+        }
+
+        function stopAlarmLoop() {
+            if (alarmInterval) {
+                clearInterval(alarmInterval);
+                alarmInterval = null;
+            }
+        }
+        // ----------------------------------------
 
         function formatSeconds(sec) {
             const h = Math.floor(sec / 3600).toString().padStart(2, '0');
@@ -510,7 +558,9 @@
 
         function showCustomModal(title, text, buttons) {
             return new Promise((resolve) => {
-                // Perbaikan Keamanan: Memisahkan penulisan modal text dari innerHTML untuk mencegah XSS injection.
+                // Mulai mainkan alarm berulang saat modal muncul
+                startAlarmLoop();
+
                 modalTitle.textContent = title;
                 modalBody.textContent = text; 
                 modalActions.innerHTML = '';
@@ -518,8 +568,10 @@
                 buttons.forEach(btnConfig => {
                     const btn = document.createElement('button');
                     btn.className = `modal-btn ${btnConfig.class || 'modal-btn-primary'}`;
-                    btn.textContent = btnConfig.text; // Text content otomatis disanitasi oleh DOM API
+                    btn.textContent = btnConfig.text;
                     btn.onclick = () => {
+                        // Hentikan alarm saat user mengklik tombol apapun
+                        stopAlarmLoop();
                         modalOverlay.classList.remove('active');
                         resolve(btnConfig.value);
                     };
@@ -630,6 +682,8 @@
         }
 
         function startProgram(mode) {
+            initAudio(); // Inisialisasi audio dari interaksi pertama user (menghindari error autoplay)
+
             let workDurationSeconds = 3600;
             let breakDurationSeconds = 0;
             let breakText = "";
@@ -644,7 +698,6 @@
                 const hourVal = parseFloat(customHourInput.value.trim());
                 const breakVal = parseFloat(customBreakInput.value.trim() || "0");
 
-                // Perbaikan Keamanan: Validasi input yang lebih ketat sebelum diproses
                 if (isNaN(hourVal) || hourVal <= 0 || hourVal > 24) {
                     showAlert("Work hours must be a valid number between 0.1 and 24!", "Input Error");
                     return;

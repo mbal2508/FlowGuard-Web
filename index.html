@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Lapisan Keamanan Ekstra: Content Security Policy (CSP) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:;">
+    <!-- Mencegah sniffing tipe konten -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    
+    <title>FlowGuard - Worktime & Hydration Reminder</title>
+    
+    <!-- Favicon Logo -->
+    <link rel="icon" href="FlowGuard Logo's.png" type="image/png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-app: #11111b;
+            --bg-card: #181825;
+            --bg-frame: #1e1e2e;
+            --bg-input: #313244;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --fg-text: #cdd6f4;
+            --subtext: #9399b2;
+            --overlay: rgba(17, 17, 27, 0.85);
+            
+            --btn-blue: #89b4fa;
+            --btn-green: #a6e3a1;
+            --btn-red: #f38ba8;
+            --accent-yellow: #f9e2af;
+            --disabled-bg: #45475a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-app);
+            color: var(--fg-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+            background-image: radial-gradient(circle at 50% 0%, rgba(137, 180, 250, 0.05), transparent 70%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 460px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Header Layout */
+        .header {
+            text-align: center;
+            padding: 6px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .header-logo-img {
+            height: 56px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 12px rgba(137, 180, 250, 0.25));
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--fg-text);
+        }
+
+        /* Card Section */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            position: absolute;
+            top: -11px;
+            left: 14px;
+            background-color: var(--bg-app);
+            padding: 0 8px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--subtext);
+            border-radius: 4px;
+        }
+
+        /* Buttons Grid */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #11111b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .btn:hover:not(:disabled) {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background-color: var(--disabled-bg) !important;
+            color: var(--subtext) !important;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-blue { background-color: var(--btn-blue); }
+        .btn-red { background-color: var(--btn-red); }
+        .btn-green { background-color: var(--btn-green); }
+
+        /* Custom Form */
+        .custom-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--subtext);
+        }
+
+        .input-field {
+            background-color: var(--bg-frame);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: var(--fg-text);
+            font-size: 13px;
+            outline: none;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: var(--btn-blue);
+        }
+
+        .input-field:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Status Widget */
+        .status-frame {
+            background-color: var(--bg-frame);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--subtext);
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--subtext);
+            border-radius: 50%;
+        }
+
+        .pulse-dot.active {
+            background-color: var(--btn-green);
+            box-shadow: 0 0 8px var(--btn-green);
+        }
+
+        .label-status {
+            color: var(--fg-text);
+            font-size: 13px;
+            white-space: pre-line;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        .sys-logs {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin: 8px 0;
+        }
+
+        .sys-log {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .sys-log.green { color: var(--btn-green); }
+        .sys-log.yellow { color: var(--accent-yellow); }
+
+        /* Timer Badge */
+        .timer-badge {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--btn-blue);
+            display: none;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            color: var(--subtext);
+            opacity: 0.7;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--overlay);
+            backdrop-filter: blur(6px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+        }
+
+        .modal-overlay.active .modal-box {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--btn-blue);
+        }
+
+        .modal-body {
+            font-size: 13px;
+            color: var(--fg-text);
+            margin-bottom: 18px;
+            line-height: 1.5;
+            /* Perubahan: white-space pre-wrap memastikan teks baru terender dengan aman tanpa tag HTML */
+            white-space: pre-wrap; 
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .modal-btn-primary { background-color: var(--btn-blue); color: #11111b; }
+        .modal-btn-green { background-color: var(--btn-green); color: #11111b; }
+        .modal-btn-secondary { background-color: var(--bg-input); color: var(--fg-text); }
+        
+        @media (max-width: 380px) {
+            .preset-grid, .form-row {
+                grid-template-columns: 1fr;
+            }
+            .header-logo-img {
+                height: 46px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <img src="FlowGuard Logo's.png" alt="FlowGuard Logo" class="header-logo-img" onerror="this.style.display='none'">
+            <h1>FlowGuard</h1>
+        </div>
+
+        <!-- Quick Mode -->
+        <div class="card">
+            <div class="card-title">Quick Mode</div>
+            <div class="preset-grid">
+                <button id="btn-preset-1" class="btn btn-blue" onclick="startProgram('with_break')">1 Hr Work, 30 Min Break</button>
+                <button id="btn-preset-2" class="btn btn-red" onclick="startProgram('no_break')">Work Without Break</button>
+            </div>
+        </div>
+
+        <!-- Custom Mode -->
+        <div class="card">
+            <div class="card-title">Custom Mode</div>
+            <div class="custom-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="custom-hour">Work Hours</label>
+                        <!-- Perubahan: Pembatasan max="24" agar user tidak mengeksploitasi timer -->
+                        <input type="number" id="custom-hour" class="input-field" placeholder="1 or 1.5" step="0.1" min="0.1" max="24" oninput="if(this.value>24)this.value=24;">
+                    </div>
+                    <div class="form-group">
+                        <label for="custom-break">Break (Hours)</label>
+                        <input type="number" id="custom-break" class="input-field" placeholder="0.5" step="0.1" min="0" max="24" oninput="if(this.value>24)this.value=24;">
+                    </div>
+                </div>
+                <button id="btn-custom" class="btn btn-green" onclick="startProgram('custom')">Start Custom Mode</button>
+            </div>
+        </div>
+
+        <!-- Status Box -->
+        <div class="status-frame">
+            <div class="status-header">
+                <div id="pulse-dot" class="pulse-dot"></div>
+                <span>System Status</span>
+            </div>
+            
+            <div id="label-status" class="label-status">Program status will appear here...</div>
+            
+            <div class="sys-logs">
+                <div id="label-sys" class="sys-log green"></div>
+                <div id="label-back" class="sys-log yellow"></div>
+            </div>
+
+            <div id="timer-badge" class="timer-badge">Remaining: <span id="time-left">00:00:00</span></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            © 2026 Jembar Muhammad Firdiana. Licensed under MIT License.
+        </div>
+    </div>
+
+    <!-- Modal Popup -->
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div id="modal-title" class="modal-title">FlowGuard</div>
+            <div id="modal-body" class="modal-body">Message text here</div>
+            <div id="modal-actions" class="modal-actions"></div>
+        </div>
+    </div>
+
+    <script>
+        const btnPreset1 = document.getElementById('btn-preset-1');
+        const btnPreset2 = document.getElementById('btn-preset-2');
+        const btnCustom = document.getElementById('btn-custom');
+        const customHourInput = document.getElementById('custom-hour');
+        const customBreakInput = document.getElementById('custom-break');
+        
+        const labelStatus = document.getElementById('label-status');
+        const labelSys = document.getElementById('label-sys');
+        const labelBack = document.getElementById('label-back');
+        const timerBadge = document.getElementById('timer-badge');
+        const timeLeftSpan = document.getElementById('time-left');
+        const pulseDot = document.getElementById('pulse-dot');
+
+        const modalOverlay = document.getElementById('custom-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalActions = document.getElementById('modal-actions');
+
+        let isRunning = false;
+        let countdownInterval = null;
+
+        // Sanitasi teks utilitas (Mencegah XSS pada tag log yang mungkin di injeksi nanti)
+        function sanitizeText(str) {
+            const temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML;
+        }
+
+        function formatSeconds(sec) {
+            const h = Math.floor(sec / 3600).toString().padStart(2, '0');
+            const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
+            const s = (sec % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function startCountdown(seconds) {
+            return new Promise((resolve) => {
+                let remaining = seconds;
+                timerBadge.style.display = 'block';
+                timeLeftSpan.textContent = formatSeconds(remaining);
+
+                if (countdownInterval) clearInterval(countdownInterval);
+
+                countdownInterval = setInterval(() => {
+                    remaining--;
+                    timeLeftSpan.textContent = formatSeconds(remaining);
+
+                    if (remaining <= 0) {
+                        clearInterval(countdownInterval);
+                        timerBadge.style.display = 'none';
+                        resolve();
+                    }
+                }, 1000);
+            });
+        }
+
+        function showCustomModal(title, text, buttons) {
+            return new Promise((resolve) => {
+                // Perbaikan Keamanan: Memisahkan penulisan modal text dari innerHTML untuk mencegah XSS injection.
+                modalTitle.textContent = title;
+                modalBody.textContent = text; 
+                modalActions.innerHTML = '';
+
+                buttons.forEach(btnConfig => {
+                    const btn = document.createElement('button');
+                    btn.className = `modal-btn ${btnConfig.class || 'modal-btn-primary'}`;
+                    btn.textContent = btnConfig.text; // Text content otomatis disanitasi oleh DOM API
+                    btn.onclick = () => {
+                        modalOverlay.classList.remove('active');
+                        resolve(btnConfig.value);
+                    };
+                    modalActions.appendChild(btn);
+                });
+
+                modalOverlay.classList.add('active');
+            });
+        }
+
+        async function showAlert(text, title = "FlowGuard") {
+            return showCustomModal(title, text, [{ text: 'OK', value: true, class: 'modal-btn-primary' }]);
+        }
+
+        function setUILock(locked) {
+            btnPreset1.disabled = locked;
+            btnPreset2.disabled = locked;
+            btnCustom.disabled = locked;
+            customHourInput.disabled = locked;
+            customBreakInput.disabled = locked;
+            
+            if (locked) {
+                pulseDot.classList.add('active');
+            } else {
+                pulseDot.classList.remove('active');
+            }
+        }
+
+        async function process(mode, workDurationSeconds, breakDurationSeconds, breakText) {
+            let workHour = 1;
+
+            while (isRunning) {
+                const now = new Date();
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes().toString().padStart(2, '0');
+                
+                const infoText = `===== Information =====\nThis is work hour #${workHour}\nStarted at ${currentHour.toString().padStart(2, '0')}:${currentMinute}\n=====================`;
+                labelStatus.textContent = infoText;
+
+                if (currentHour >= 0 && currentHour < 5) {
+                    const askSleep = await showCustomModal(
+                        "System Warning", 
+                        "It's past 00:00, time to sleep.\nShutdown?", 
+                        [
+                            { text: 'OK (Shutdown)', value: 'OK', class: 'modal-btn-primary' },
+                            { text: 'No', value: 'No', class: 'modal-btn-secondary' }
+                        ]
+                    );
+
+                    if (askSleep === "OK") {
+                        labelStatus.textContent = "SYSTEM SHUTDOWN SIMULATED";
+                        labelSys.textContent = "Computer was shut down.";
+                        setUILock(false);
+                        isRunning = false;
+                        return;
+                    }
+                }
+
+                await startCountdown(workDurationSeconds);
+
+                if (workDurationSeconds >= 3600) {
+                    await showAlert("One hour has passed...", "FlowGuard");
+                } else {
+                    await showAlert("Custom work time has passed...", "FlowGuard");
+                }
+
+                while (isRunning) {
+                    const askWater = await showCustomModal(
+                        "Hydration Reminder",
+                        "Have you drank water?",
+                        [
+                            { text: 'Yes', value: 'Yes', class: 'modal-btn-green' },
+                            { text: 'Not yet', value: 'Not yet', class: 'modal-btn-secondary' }
+                        ]
+                    );
+
+                    if (askWater === "Yes") {
+                        labelSys.textContent = "SYSTEM : Good, you are now hydrated.";
+                        labelSys.className = "sys-log green";
+                        break;
+                    } else {
+                        await showAlert("Okay, I will wait 5 minutes before reminding you again.", "FlowGuard");
+                        await startCountdown(300);
+                    }
+                }
+
+                if (breakDurationSeconds > 0) {
+                    await showAlert(`Time to take a break for ${breakText}..`, "FlowGuard");
+                    labelSys.textContent = `SYSTEM : Time to rest for ${breakText}..`;
+                    labelSys.className = "sys-log yellow";
+
+                    const returnTime = new Date(Date.now() + breakDurationSeconds * 1000);
+                    const returnH = returnTime.getHours().toString().padStart(2, '0');
+                    const returnM = returnTime.getMinutes().toString().padStart(2, '0');
+                    labelBack.textContent = `SYSTEM : Back to work at ${returnH}:${returnM}`;
+
+                    await startCountdown(breakDurationSeconds);
+
+                    await showAlert("Break time is over, let's get back to work boss!", "FlowGuard");
+                    labelBack.textContent = "";
+                }
+
+                labelSys.textContent = "SYSTEM : Back to work boss!";
+                labelSys.className = "sys-log green";
+                workHour++;
+                await sleep(1000);
+            }
+        }
+
+        function startProgram(mode) {
+            let workDurationSeconds = 3600;
+            let breakDurationSeconds = 0;
+            let breakText = "";
+
+            if (mode === "with_break") {
+                breakDurationSeconds = 1800;
+                breakText = "30 minutes";
+            } else if (mode === "no_break") {
+                breakDurationSeconds = 0;
+                breakText = "0 minutes";
+            } else if (mode === "custom") {
+                const hourVal = parseFloat(customHourInput.value.trim());
+                const breakVal = parseFloat(customBreakInput.value.trim() || "0");
+
+                // Perbaikan Keamanan: Validasi input yang lebih ketat sebelum diproses
+                if (isNaN(hourVal) || hourVal <= 0 || hourVal > 24) {
+                    showAlert("Work hours must be a valid number between 0.1 and 24!", "Input Error");
+                    return;
+                }
+                
+                if (isNaN(breakVal) || breakVal < 0 || breakVal > 24) {
+                    showAlert("Break hours must be a valid number between 0 and 24!", "Input Error");
+                    return;
+                }
+
+                workDurationSeconds = Math.round(hourVal * 3600);
+                breakDurationSeconds = Math.round((isNaN(breakVal) ? 0 : breakVal) * 3600);
+                breakText = breakVal >= 1 ? `${breakVal} hours` : `${Math.round(breakVal * 60)} minutes`;
+            }
+
+            isRunning = true;
+            setUILock(true);
+            process(mode, workDurationSeconds, breakDurationSeconds, breakText);
+        }
+    </script>
+</body>
+</html>

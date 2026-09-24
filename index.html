@@ -1,12 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com;">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    
     <title>FlowGuard - Worktime, Hydration & Work Tracker</title>
     
     <link rel="icon" href="FlowGuard Logo's.png" type="image/png">
@@ -59,7 +55,6 @@
             gap: 16px;
         }
 
-        /* Header Layout */
         .header {
             text-align: center;
             padding: 6px 0;
@@ -88,7 +83,6 @@
             color: var(--fg-text);
         }
 
-        /* Auth Bar */
         .auth-status {
             display: flex;
             align-items: center;
@@ -100,6 +94,7 @@
             height: 32px;
             border-radius: 50%;
             border: 1px solid var(--btn-blue);
+            object-fit: cover;
         }
 
         .btn-auth {
@@ -122,7 +117,6 @@
             color: var(--btn-blue);
         }
 
-        /* Card Section */
         .card {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -146,7 +140,6 @@
             border-radius: 4px;
         }
 
-        /* Buttons Grid */
         .preset-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -194,7 +187,6 @@
             display: none;
         }
 
-        /* Custom Form */
         .custom-form {
             display: flex;
             flex-direction: column;
@@ -241,7 +233,6 @@
             border-color: var(--btn-blue);
         }
 
-        /* Status Widget */
         .status-frame {
             background-color: var(--bg-frame);
             border: 1px solid var(--border-color);
@@ -317,7 +308,6 @@
             display: none;
         }
 
-        /* Logs History Section */
         .logs-container {
             display: flex;
             flex-direction: column;
@@ -365,6 +355,10 @@
             font-size: 11px;
         }
 
+        .log-doc:hover {
+            text-decoration: underline;
+        }
+
         .badge-storage {
             font-size: 9px;
             padding: 2px 6px;
@@ -376,7 +370,6 @@
         .badge-cloud { background: rgba(166, 227, 161, 0.2); color: var(--btn-green); }
         .badge-local { background: rgba(249, 226, 175, 0.2); color: var(--accent-yellow); }
 
-        /* Modal Overlay */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -464,7 +457,6 @@
 <body>
 
     <div class="container">
-        <!-- Header -->
         <div class="header">
             <div class="header-brand">
                 <img src="FlowGuard Logo's.png" alt="FlowGuard Logo" class="header-logo-img" onerror="this.style.display='none'">
@@ -475,52 +467,48 @@
             </div>
         </div>
 
-        <!-- Quick Mode -->
         <div class="card">
             <div class="card-title">Quick Mode</div>
             <div class="preset-grid">
-                <button id="btn-preset-1" class="btn btn-blue" onclick="startProgram('with_break')">1 Hr Work, 30 Min Break</button>
-                <button id="btn-preset-2" class="btn btn-red" onclick="startProgram('no_break')">Work Without Break</button>
+                <button id="btn-preset-1" class="btn btn-blue">1 Hr Work, 30 Min Break</button>
+                <button id="btn-preset-2" class="btn btn-red">Work Without Break</button>
             </div>
         </div>
 
-        <!-- Custom Mode -->
         <div class="card">
             <div class="card-title">Custom Mode</div>
             <div class="custom-form">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="custom-hour">Work Hours</label>
-                        <input type="number" id="custom-hour" class="input-field" placeholder="1 or 1.5" step="0.1" min="0.1" max="24" oninput="if(this.value>24)this.value=24;">
+                        <input type="number" id="custom-hour" class="input-field" placeholder="1 or 1.5" step="0.1" min="0.1" max="24">
                     </div>
                     <div class="form-group">
                         <label for="custom-break">Break (Hours)</label>
-                        <input type="number" id="custom-break" class="input-field" placeholder="0.5" step="0.1" min="0" max="24" oninput="if(this.value>24)this.value=24;">
+                        <input type="number" id="custom-break" class="input-field" placeholder="0.5" step="0.1" min="0" max="24">
                     </div>
                 </div>
-                <button id="btn-custom" class="btn btn-green" onclick="startProgram('custom')">Start Custom Mode</button>
+                <button id="btn-custom" class="btn btn-green">Start Custom Mode</button>
             </div>
         </div>
 
-        <!-- Status Box -->
         <div class="status-frame">
             <div class="status-header">
                 <div id="pulse-dot" class="pulse-dot"></div>
                 <span>System Status</span>
             </div>
             
-            <div id="label-status" class="label-status">Program status will appear here...</div>
+            <div id="label-status" class="label-status">Status program akan muncul di sini...</div>
             
             <div class="sys-logs">
                 <div id="label-sys" class="sys-log green"></div>
                 <div id="label-back" class="sys-log yellow"></div>
             </div>
 
-            <div id="timer-badge" class="timer-badge">Remaining: <span id="time-left">00:00:00</span></div>
-            <button id="btn-stop-work" class="btn btn-stop" onclick="stopWorkSession()">Stop Working & Save Log</button>
+            <div id="timer-badge" class="timer-badge">Sisa Waktu: <span id="time-left">00:00:00</span></div>
+            <button id="btn-stop-work" class="btn btn-stop">Stop Working & Save Log</button>
         </div>
 
-        <!-- Work History Logs -->
         <div class="card">
             <div class="card-title">Riwayat Kerja</div>
             <div class="logs-container" id="logs-container">
@@ -528,13 +516,11 @@
             </div>
         </div>
 
-        <!-- Footer -->
         <div class="footer">
             © 2026 Jembar Muhammad Firdiana. Licensed under MIT License.
         </div>
     </div>
 
-    <!-- Dynamic Modal -->
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-box">
             <div id="modal-title" class="modal-title">FlowGuard</div>
@@ -543,7 +529,6 @@
         </div>
     </div>
 
-    <!-- Firebase SDK Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
@@ -564,43 +549,14 @@
         const provider = new GoogleAuthProvider();
 
         let currentUser = null;
-
-        // UI Auth Controls
-        const authContainer = document.getElementById('auth-container');
-        const btnLogin = document.getElementById('btn-login');
-
-        btnLogin.addEventListener('click', async () => {
-            initAudio();
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (err) {
-                console.error("Login Error:", err);
-            }
-        });
-
-        onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
-            if (user) {
-                authContainer.innerHTML = `
-                    <img src="${user.photoURL}" alt="${user.displayName}" class="user-avatar">
-                    <button class="btn-auth" id="btn-logout">Logout</button>
-                `;
-                document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
-                await syncLocalLogsToCloud();
-            } else {
-                authContainer.innerHTML = `<button class="btn-auth" id="btn-login-dynamic">Login Google</button>`;
-                document.getElementById('btn-login-dynamic').addEventListener('click', () => signInWithPopup(auth, provider));
-            }
-            renderLogs();
-        });
-
-        // App System State
         let isRunning = false;
         let countdownInterval = null;
+        let alarmInterval = null;
         let workStartTime = null;
         let audioCtx = null;
-        let alarmInterval = null;
 
+        // Element References
+        const authContainer = document.getElementById('auth-container');
         const btnPreset1 = document.getElementById('btn-preset-1');
         const btnPreset2 = document.getElementById('btn-preset-2');
         const btnCustom = document.getElementById('btn-custom');
@@ -651,13 +607,13 @@
                 playNote(659.25, 0.15, 0.25);
                 playNote(783.99, 0.30, 0.40);
             } catch (e) {
-                console.log('Audio error:', e);
+                console.error('Audio playback error:', e);
             }
         }
 
         function startAlarmLoop() {
             initAudio();
-            if (alarmInterval) clearInterval(alarmInterval);
+            stopAlarmLoop();
             playMelody();
             alarmInterval = setInterval(playMelody, 1500); 
         }
@@ -678,6 +634,15 @@
 
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function sanitizeUrl(urlStr) {
+            if (!urlStr) return '';
+            const trimmed = urlStr.trim();
+            if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+                return trimmed;
+            }
+            return 'https://' + trimmed;
         }
 
         function showCustomModal(title, textOrHtml, buttons) {
@@ -739,6 +704,7 @@
                 countdownInterval = setInterval(() => {
                     if (!isRunning) {
                         clearInterval(countdownInterval);
+                        timerBadge.style.display = 'none';
                         resolve();
                         return;
                     }
@@ -754,9 +720,13 @@
             });
         }
 
-        // Local & Cloud Storage Sync Logic
+        // Local Storage & Cloud Sync Operations
         function getLocalLogs() {
-            return JSON.parse(localStorage.getItem('flowguard_logs') || '[]');
+            try {
+                return JSON.parse(localStorage.getItem('flowguard_logs') || '[]');
+            } catch (e) {
+                return [];
+            }
         }
 
         function saveLocalLog(log) {
@@ -781,7 +751,7 @@
                         createdAt: new Date(log.timestamp)
                     });
                 } catch (e) {
-                    console.error("Gagal migrasi data ke cloud:", e);
+                    console.error("Gagal migrasi data lokal ke cloud:", e);
                 }
             }
             localStorage.removeItem('flowguard_logs');
@@ -790,23 +760,28 @@
         async function saveWorkLog(secondsWorked, taskDescription, docLink) {
             const durationFormatted = formatSeconds(secondsWorked);
             const timestamp = new Date().toISOString();
+            const cleanDocLink = docLink ? sanitizeUrl(docLink) : '';
 
             if (currentUser) {
-                await addDoc(collection(db, "work_logs"), {
-                    userId: currentUser.uid,
-                    durationFormatted,
-                    secondsWorked,
-                    taskDescription,
-                    docLink,
-                    createdAt: serverTimestamp()
-                });
+                try {
+                    await addDoc(collection(db, "work_logs"), {
+                        userId: currentUser.uid,
+                        durationFormatted,
+                        secondsWorked,
+                        taskDescription,
+                        docLink: cleanDocLink,
+                        createdAt: serverTimestamp()
+                    });
+                } catch (e) {
+                    console.error("Gagal menyimpan log ke Cloud:", e);
+                }
             } else {
                 saveLocalLog({
                     id: Date.now().toString(),
                     durationFormatted,
                     secondsWorked,
                     taskDescription,
-                    docLink,
+                    docLink: cleanDocLink,
                     timestamp
                 });
             }
@@ -815,8 +790,8 @@
 
         async function renderLogs() {
             logsContainer.innerHTML = '';
-
             let logs = [];
+
             if (currentUser) {
                 try {
                     const q = query(
@@ -830,17 +805,17 @@
                         logs.push({
                             ...data,
                             isCloud: true,
-                            dateStr: data.createdAt ? new Date(data.createdAt.toDate()).toLocaleString() : new Date().toLocaleString()
+                            dateStr: data.createdAt ? new Date(data.createdAt.toDate()).toLocaleString('id-ID') : new Date().toLocaleString('id-ID')
                         });
                     });
                 } catch (e) {
-                    console.error("Gagal mengambil log dari cloud:", e);
+                    console.error("Gagal mengambil log Firestore:", e);
                 }
             } else {
                 logs = getLocalLogs().map(l => ({
                     ...l,
                     isCloud: false,
-                    dateStr: new Date(l.timestamp).toLocaleString()
+                    dateStr: new Date(l.timestamp).toLocaleString('id-ID')
                 }));
             }
 
@@ -852,6 +827,10 @@
             logs.forEach(log => {
                 const el = document.createElement('div');
                 el.className = 'log-item';
+                
+                const taskText = log.taskDescription ? log.taskDescription : 'Tanpa deskripsi pekerjaan';
+                const docHtml = log.docLink ? `<a href="${log.docLink}" target="_blank" rel="noopener noreferrer" class="log-doc">Dokumentasi: ${log.docLink}</a>` : '';
+
                 el.innerHTML = `
                     <div class="log-header">
                         <span>${log.dateStr}</span>
@@ -860,19 +839,23 @@
                             <span class="badge-storage ${log.isCloud ? 'badge-cloud' : 'badge-local'}">${log.isCloud ? 'Cloud' : 'Lokal'}</span>
                         </div>
                     </div>
-                    <div class="log-task">${log.taskDescription || 'Tanpa deskripsi pekerjaan'}</div>
-                    ${log.docLink ? `<a href="${log.docLink}" target="_blank" class="log-doc">Dokumentasi: ${log.docLink}</a>` : ''}
+                    <div class="log-task"></div>
+                    ${docHtml}
                 `;
+                
+                el.querySelector('.log-task').textContent = taskText;
                 logsContainer.appendChild(el);
             });
         }
 
-        // Stop Work Handler
-        window.stopWorkSession = async function() {
+        // Stop Work Session Handler
+        async function stopWorkSession() {
+            initAudio();
             isRunning = false;
             if (countdownInterval) clearInterval(countdownInterval);
+            stopAlarmLoop();
 
-            const secondsWorked = workStartTime ? Math.floor((Date.now() - workStartTime) / 1000) : 0;
+            const secondsWorked = workStartTime ? Math.max(0, Math.floor((Date.now() - workStartTime) / 1000)) : 0;
             const durationFormatted = formatSeconds(secondsWorked);
 
             const formHtml = `
@@ -880,11 +863,11 @@
                     <div><strong>Durasi Kerja:</strong> ${durationFormatted}</div>
                     <div class="form-group">
                         <label for="modal-task">Apa yang sudah kamu kerjakan?</label>
-                        <textarea id="modal-task" class="textarea-field" placeholder="Contoh: Menyelesaikan revisi modul login"></textarea>
+                        <textarea id="modal-task" class="textarea-field" placeholder="Contoh: Membuat fitur modul login"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="modal-doc">Link Dokumentasi (Opsional)</label>
-                        <input type="url" id="modal-doc" class="input-field" placeholder="https://notion.so/... atau Link Drive">
+                        <input type="url" id="modal-doc" class="input-field" placeholder="https://notion.so/... atau Drive Link">
                     </div>
                 </div>
             `;
@@ -902,7 +885,7 @@
                             saveWorkLog(secondsWorked, task, doc);
                         }
                     },
-                    { text: 'Batal', class: 'modal-btn-secondary', value: () => false }
+                    { text: 'Batal Tanpa Menyimpan', class: 'modal-btn-secondary', value: () => false }
                 ]
             );
 
@@ -910,10 +893,10 @@
             labelSys.textContent = "";
             labelBack.textContent = "";
             setUILock(false);
-        };
+        }
 
-        // Main Program Execution Loop
-        async function process(mode, workDurationSeconds, breakDurationSeconds, breakText) {
+        // Execution Engine
+        async function processSession(mode, workDurationSeconds, breakDurationSeconds, breakText) {
             let workHour = 1;
 
             while (isRunning) {
@@ -932,6 +915,8 @@
                             { text: 'No', value: () => 'No', class: 'modal-btn-secondary' }
                         ]
                     );
+
+                    if (!isRunning) break;
 
                     if (askSleep === "OK") {
                         labelStatus.textContent = "SYSTEM SHUTDOWN SIMULATED";
@@ -962,12 +947,15 @@
                         ]
                     );
 
+                    if (!isRunning) break;
+
                     if (askWater === "Yes") {
                         labelSys.textContent = "SYSTEM : Good, you are now hydrated.";
                         labelSys.className = "sys-log green";
                         break;
                     } else {
                         await showAlert("Okay, I will wait 5 minutes before reminding you again.", "FlowGuard");
+                        if (!isRunning) break;
                         await startCountdown(300);
                     }
                 }
@@ -975,6 +963,8 @@
 
                 if (breakDurationSeconds > 0) {
                     await showAlert(`Time to take a break for ${breakText}..`, "FlowGuard");
+                    if (!isRunning) break;
+
                     labelSys.textContent = `SYSTEM : Time to rest for ${breakText}..`;
                     labelSys.className = "sys-log yellow";
 
@@ -997,7 +987,7 @@
             }
         }
 
-        window.startProgram = function(mode) {
+        function startProgram(mode) {
             initAudio();
 
             let workDurationSeconds = 3600;
@@ -1015,27 +1005,68 @@
                 const breakVal = parseFloat(customBreakInput.value.trim() || "0");
 
                 if (isNaN(hourVal) || hourVal <= 0 || hourVal > 24) {
-                    showAlert("Work hours must be a valid number between 0.1 and 24!", "Input Error");
+                    showAlert("Jam kerja harus berupa angka antara 0.1 sampai 24 jam!", "Input Tidak Valid");
                     return;
                 }
                 
                 if (isNaN(breakVal) || breakVal < 0 || breakVal > 24) {
-                    showAlert("Break hours must be a valid number between 0 and 24!", "Input Error");
+                    showAlert("Jam istirahat harus berupa angka antara 0 sampai 24 jam!", "Input Tidak Valid");
                     return;
                 }
 
                 workDurationSeconds = Math.round(hourVal * 3600);
-                breakDurationSeconds = Math.round((isNaN(breakVal) ? 0 : breakVal) * 3600);
-                breakText = breakVal >= 1 ? `${breakVal} hours` : `${Math.round(breakVal * 60)} minutes`;
+                breakDurationSeconds = Math.round(breakVal * 3600);
+                breakText = breakVal >= 1 ? `${breakVal} jam` : `${Math.round(breakVal * 60)} menit`;
             }
 
             isRunning = true;
             workStartTime = Date.now();
             setUILock(true);
-            process(mode, workDurationSeconds, breakDurationSeconds, breakText);
-        };
+            processSession(mode, workDurationSeconds, breakDurationSeconds, breakText);
+        }
 
-        // Initial Load Render
+        // Programmatic Event Binding
+        btnPreset1.addEventListener('click', () => startProgram('with_break'));
+        btnPreset2.addEventListener('click', () => startProgram('no_break'));
+        btnCustom.addEventListener('click', () => startProgram('custom'));
+        btnStopWork.addEventListener('click', () => stopWorkSession());
+
+        // Input Sanitize Limits
+        customHourInput.addEventListener('input', (e) => {
+            if (parseFloat(e.target.value) > 24) e.target.value = 24;
+        });
+        customBreakInput.addEventListener('input', (e) => {
+            if (parseFloat(e.target.value) > 24) e.target.value = 24;
+        });
+
+        // Authentication State Listener
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (user) {
+                authContainer.innerHTML = `
+                    <img src="${user.photoURL || ''}" alt="Avatar" class="user-avatar" onerror="this.style.display='none'">
+                    <button class="btn-auth" id="btn-logout">Logout</button>
+                `;
+                document.getElementById('btn-logout').addEventListener('click', () => {
+                    initAudio();
+                    signOut(auth);
+                });
+                await syncLocalLogsToCloud();
+            } else {
+                authContainer.innerHTML = `<button class="btn-auth" id="btn-login">Login Google</button>`;
+                document.getElementById('btn-login').addEventListener('click', async () => {
+                    initAudio();
+                    try {
+                        await signInWithPopup(auth, provider);
+                    } catch (err) {
+                        console.error("Login Error:", err);
+                    }
+                });
+            }
+            renderLogs();
+        });
+
+        // Initial Load
         renderLogs();
     </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
+    <!-- Meta CSP dihapus agar tidak memblokir Firebase di GitHub Pages -->
     
     <title>FlowGuard - Worktime & Tracker</title>
     
@@ -45,7 +45,6 @@
         .input-field:focus, .textarea-field:focus { border-color: var(--btn-blue); }
         .textarea-field { resize: vertical; min-height: 60px; }
         
-        /* Input Addon untuk @gmail.com */
         .input-group { display: flex; align-items: center; background: var(--bg-frame); border: 1px solid var(--border-color); border-radius: 8px; padding-right: 12px; transition: 0.2s; }
         .input-group:focus-within { border-color: var(--btn-blue); }
         .input-group .input-field { border: none; border-radius: 8px 0 0 8px; flex: 1; }
@@ -133,16 +132,7 @@
         <div class="footer">© 2026 Jembar Muhammad Firdiana.</div>
     </div>
 
-    <!-- Modal Dinamis (Notifikasi/Sistem) -->
-    <div id="custom-modal" class="modal-overlay">
-        <div class="modal-box">
-            <div id="modal-title" class="modal-title">FlowGuard</div>
-            <div id="modal-body" class="modal-body"></div>
-            <div id="modal-actions" class="modal-actions"></div>
-        </div>
-    </div>
-
-    <!-- Modal Khusus Auth (Login/Register) -->
+    <!-- Modal Khusus Auth -->
     <div id="auth-modal" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title">Identitas Akun</div>
@@ -161,15 +151,23 @@
             </div>
             <div class="modal-actions">
                 <button id="btn-auth-login" class="modal-btn modal-btn-primary">Masuk</button>
-                <button id="btn-auth-register" class="modal-btn modal-btn-secondary">Daftar Akun</button>
+                <button id="btn-auth-register" class="modal-btn modal-btn-secondary">Daftar</button>
             </div>
             <div style="margin-top:12px;"><button id="btn-auth-close" style="background:none; border:none; color:var(--subtext); font-size:12px; cursor:pointer;">Batal</button></div>
         </div>
     </div>
 
+    <!-- Modal Standar Sistem -->
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div id="modal-title" class="modal-title">FlowGuard</div>
+            <div id="modal-body" class="modal-body"></div>
+            <div id="modal-actions" class="modal-actions"></div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        // Ganti Auth Provider ke Email & Password yang lebih ringan
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
@@ -195,13 +193,23 @@
             lblBack: document.getElementById('label-back'), timerBadge: document.getElementById('timer-badge'),
             timeLeft: document.getElementById('time-left'), pulse: document.getElementById('pulse-dot'),
             logs: document.getElementById('logs-container'),
-            
-            authModal: document.getElementById('auth-modal'),
-            authUsername: document.getElementById('auth-username'),
-            authPass: document.getElementById('auth-password')
+            authModal: document.getElementById('auth-modal'), authUsername: document.getElementById('auth-username'), authPass: document.getElementById('auth-password')
         };
 
-        // --- AUTHENTICATION LOGIC ---
+        // --- SISTEM BACA LOG ANTI CRASH ---
+        const getLocalLogs = () => {
+            try {
+                const data = localStorage.getItem('flowguard_logs');
+                if (!data) return [];
+                const parsedData = JSON.parse(data);
+                return Array.isArray(parsedData) ? parsedData : [];
+            } catch (error) {
+                console.warn("Format data lokal versi lama terdeteksi, membersihkan data yang error agar web tidak crash...");
+                localStorage.removeItem('flowguard_logs');
+                return [];
+            }
+        };
+
         function toggleAuthModal(show) {
             ui.authUsername.value = ''; ui.authPass.value = '';
             show ? ui.authModal.classList.add('active') : ui.authModal.classList.remove('active');
@@ -210,17 +218,18 @@
         document.getElementById('btn-auth-close').onclick = () => toggleAuthModal(false);
 
         document.getElementById('btn-auth-login').onclick = async () => {
-            const user = ui.authUsername.value.trim().replace(/\s/g, ''); // Hapus spasi jika ada
+            const user = ui.authUsername.value.trim().replace(/\s/g, '');
             const pass = ui.authPass.value;
             if(!user || !pass) return alert("Harap isi Nama Akun dan Password!");
             
             try {
                 ui.lblStatus.textContent = "Sedang login...";
-                // Sistem otomatis nambahkan @gmail.com disini
                 await signInWithEmailAndPassword(auth, `${user}@gmail.com`, pass);
                 toggleAuthModal(false);
+                ui.lblStatus.textContent = "Login berhasil!";
             } catch(e) {
                 alert("Gagal masuk. Periksa kembali akun atau password Anda.");
+                ui.lblStatus.textContent = "Gagal login.";
             }
         };
 
@@ -230,7 +239,6 @@
             if(!user || pass.length < 6) return alert("Nama akun wajib diisi & password minimal 6 karakter!");
             
             try {
-                // Otomatis daftar akun baru di Firebase menggunakan struktur dummy email
                 await createUserWithEmailAndPassword(auth, `${user}@gmail.com`, pass);
                 toggleAuthModal(false);
                 alert("Akun berhasil didaftarkan dan Anda sudah masuk!");
@@ -243,12 +251,8 @@
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
-                // Ekstrak nama sebelum @gmail.com untuk ditampilkan di UI
                 const displayName = user.email.split('@')[0];
-                ui.authContainer.innerHTML = `
-                    <span style="font-size:13px; font-weight:700; color:var(--btn-blue);">Hi, ${displayName}</span>
-                    <button class="btn-auth" id="btn-logout">Logout</button>
-                `;
+                ui.authContainer.innerHTML = `<span style="font-size:13px; font-weight:700; color:var(--btn-blue);">Hi, ${displayName}</span><button class="btn-auth" id="btn-logout">Logout</button>`;
                 document.getElementById('btn-logout').onclick = () => { initAudio(); signOut(auth); };
                 await syncLocalLogsToCloud();
             } else {
@@ -258,7 +262,6 @@
             renderLogs();
         });
 
-        // --- CORE SYSTEM & LOGS LOGIC ---
         function initAudio() {
             if (!audioCtx) { const AudioContext = window.AudioContext || window.webkitAudioContext; if (AudioContext) audioCtx = new AudioContext(); }
             if (audioCtx?.state === 'suspended') audioCtx.resume();
@@ -312,14 +315,12 @@
                 }, 1000);
             });
         }
-
-        const getLocalLogs = () => JSON.parse(localStorage.getItem('flowguard_logs') || '[]');
         
         async function syncLocalLogsToCloud() {
             if (!currentUser) return;
             const locals = getLocalLogs(); if (!locals.length) return;
             for (const log of locals) {
-                try { await addDoc(collection(db, "work_logs"), { userId: currentUser.uid, durationFormatted: log.durationFormatted, secondsWorked: log.secondsWorked, taskDescription: log.taskDescription, docLink: log.docLink, createdAt: new Date(log.timestamp) }); } catch(e){}
+                try { await addDoc(collection(db, "work_logs"), { userId: currentUser.uid, durationFormatted: log.durationFormatted || "00:00", secondsWorked: log.secondsWorked || 0, taskDescription: log.taskDescription || "Lokal", docLink: log.docLink || "", createdAt: new Date(log.timestamp || Date.now()) }); } catch(e){}
             }
             localStorage.removeItem('flowguard_logs');
         }
@@ -329,9 +330,16 @@
             if (currentUser) {
                 try {
                     const q = query(collection(db, "work_logs"), where("userId", "==", currentUser.uid), orderBy("createdAt", "desc"));
-                    (await getDocs(q)).forEach(doc => logs.push({...doc.data(), isCloud: true, dateStr: doc.data().createdAt?.toDate().toLocaleString('id-ID') || new Date().toLocaleString('id-ID') }));
-                } catch(e){}
-            } else { logs = getLocalLogs().map(l => ({...l, isCloud: false, dateStr: new Date(l.timestamp).toLocaleString('id-ID')})); }
+                    const snap = await getDocs(q);
+                    snap.forEach(doc => {
+                        const data = doc.data();
+                        const dateStr = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString('id-ID') : new Date().toLocaleString('id-ID');
+                        logs.push({...data, isCloud: true, dateStr});
+                    });
+                } catch(e){ console.error("Error get cloud logs:", e); }
+            } else { 
+                logs = getLocalLogs().map(l => ({...l, isCloud: false, dateStr: new Date(l.timestamp || Date.now()).toLocaleString('id-ID')})); 
+            }
             
             if (!logs.length) return ui.logs.innerHTML = `<div style="text-align:center; color:var(--subtext); font-size:12px; padding:12px;">Belum ada riwayat kerja.</div>`;
             
@@ -339,7 +347,7 @@
                 const doc = l.docLink ? `<a href="${l.docLink.startsWith('http') ? l.docLink : 'https://'+l.docLink}" target="_blank" class="log-doc">Link Dokumen</a>` : '';
                 ui.logs.innerHTML += `
                     <div class="log-item">
-                        <div class="log-header"><span>${l.dateStr}</span><div style="display:flex;gap:6px;align-items:center"><span class="log-duration">${l.durationFormatted}</span><span class="badge-cloud ${l.isCloud?'':'badge-local'}">${l.isCloud?'Cloud':'Lokal'}</span></div></div>
+                        <div class="log-header"><span>${l.dateStr}</span><div style="display:flex;gap:6px;align-items:center"><span class="log-duration">${l.durationFormatted || '00:00:00'}</span><span class="badge-cloud ${l.isCloud?'':'badge-local'}">${l.isCloud?'Cloud':'Lokal'}</span></div></div>
                         <div style="font-weight:600;color:var(--fg-text);">${l.taskDescription || 'Tanpa deskripsi'}</div>${doc}
                     </div>`;
             });

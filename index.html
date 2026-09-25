@@ -3,456 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:;">
-    <title>FlowGuard - Worktime, Hydration & Work Tracker</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
+    
+    <title>FlowGuard - Worktime & Tracker</title>
     
     <link rel="icon" href="FlowGuard Logo's.png" type="image/png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --bg-app: #11111b;
-            --bg-card: #181825;
-            --bg-frame: #1e1e2e;
-            --bg-input: #313244;
-            --border-color: rgba(255, 255, 255, 0.08);
-            --fg-text: #cdd6f4;
-            --subtext: #9399b2;
-            --overlay: rgba(17, 17, 27, 0.85);
-            
-            --btn-blue: #89b4fa;
-            --btn-green: #a6e3a1;
-            --btn-red: #f38ba8;
-            --accent-yellow: #f9e2af;
-            --disabled-bg: #45475a;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background-color: var(--bg-app);
-            color: var(--fg-text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 16px;
-            background-image: radial-gradient(circle at 50% 0%, rgba(137, 180, 250, 0.05), transparent 70%);
-        }
-
-        .container {
-            width: 100%;
-            max-width: 480px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .header {
-            text-align: center;
-            padding: 6px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .header-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .header-logo-img {
-            height: 42px;
-            width: auto;
-            object-fit: contain;
-            filter: drop-shadow(0 4px 12px rgba(137, 180, 250, 0.25));
-        }
-
-        .header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            color: var(--fg-text);
-        }
-
-        .auth-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 1px solid var(--btn-blue);
-            object-fit: cover;
-        }
-
-        .btn-auth {
-            background-color: var(--bg-frame);
-            border: 1px solid var(--border-color);
-            color: var(--fg-text);
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-auth:hover {
-            border-color: var(--btn-blue);
-            color: var(--btn-blue);
-        }
-
-        .card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 16px;
-            position: relative;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .card-title {
-            position: absolute;
-            top: -11px;
-            left: 14px;
-            background-color: var(--bg-app);
-            padding: 0 8px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--subtext);
-            border-radius: 4px;
-        }
-
-        .preset-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 4px;
-        }
-
-        .btn {
-            border: none;
-            padding: 12px 14px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            color: #11111b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            line-height: 1.3;
-        }
-
-        .btn:hover:not(:disabled) {
-            filter: brightness(1.08);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .btn:disabled {
-            background-color: var(--disabled-bg) !important;
-            color: var(--subtext) !important;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .btn-blue { background-color: var(--btn-blue); }
-        .btn-red { background-color: var(--btn-red); }
-        .btn-green { background-color: var(--btn-green); }
-        .btn-stop { 
-            background-color: var(--btn-red); 
-            color: #11111b; 
-            width: 100%; 
-            margin-top: 10px;
-            display: none;
-        }
-
-        .custom-form {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 4px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .form-group label {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--subtext);
-        }
-
-        .input-field, .textarea-field {
-            background-color: var(--bg-frame);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px 12px;
-            color: var(--fg-text);
-            font-size: 13px;
-            outline: none;
-            width: 100%;
-            transition: border-color 0.2s;
-        }
-
-        .textarea-field {
-            resize: vertical;
-            min-height: 60px;
-        }
-
-        .input-field:focus, .textarea-field:focus {
-            border-color: var(--btn-blue);
-        }
-
-        .status-frame {
-            background-color: var(--bg-frame);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 16px;
-            min-height: 160px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            text-align: center;
-            position: relative;
-        }
-
-        .status-header {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--subtext);
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--subtext);
-            border-radius: 50%;
-        }
-
-        .pulse-dot.active {
-            background-color: var(--btn-green);
-            box-shadow: 0 0 8px var(--btn-green);
-        }
-
-        .label-status {
-            color: var(--fg-text);
-            font-size: 13px;
-            white-space: pre-line;
-            line-height: 1.5;
-            font-weight: 500;
-        }
-
-        .sys-logs {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            margin: 8px 0;
-        }
-
-        .sys-log {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .sys-log.green { color: var(--btn-green); }
-        .sys-log.yellow { color: var(--accent-yellow); }
-
-        .timer-badge {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--btn-blue);
-            display: none;
-        }
-
-        .logs-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 240px;
-            overflow-y: auto;
-            margin-top: 6px;
-        }
-
-        .log-item {
-            background-color: var(--bg-frame);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            font-size: 12px;
-        }
-
-        .log-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: var(--subtext);
-            font-size: 11px;
-        }
-
-        .log-duration {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            color: var(--btn-blue);
-        }
-
-        .log-task {
-            color: var(--fg-text);
-            font-weight: 600;
-            line-height: 1.4;
-        }
-
-        .log-doc {
-            color: var(--btn-green);
-            text-decoration: none;
-            word-break: break-all;
-            font-size: 11px;
-        }
-
-        .log-doc:hover {
-            text-decoration: underline;
-        }
-
-        .badge-storage {
-            font-size: 9px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-
-        .badge-cloud { background: rgba(166, 227, 161, 0.2); color: var(--btn-green); }
-        .badge-local { background: rgba(249, 226, 175, 0.2); color: var(--accent-yellow); }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: var(--overlay);
-            backdrop-filter: blur(6px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-            padding: 16px;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .modal-box {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 20px;
-            width: 100%;
-            max-width: 380px;
-            text-align: center;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-            transform: scale(0.95);
-            transition: transform 0.2s ease;
-        }
-
-        .modal-overlay.active .modal-box {
-            transform: scale(1);
-        }
-
-        .modal-title {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--btn-blue);
-        }
-
-        .modal-body {
-            font-size: 13px;
-            color: var(--fg-text);
-            margin-bottom: 18px;
-            line-height: 1.5;
-            white-space: pre-wrap; 
-            text-align: left;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .modal-btn-primary { background-color: var(--btn-blue); color: #11111b; }
-        .modal-btn-green { background-color: var(--btn-green); color: #11111b; }
-        .modal-btn-secondary { background-color: var(--bg-input); color: var(--fg-text); }
-
-        .footer {
-            text-align: center;
-            font-size: 11px;
-            color: var(--subtext);
-            opacity: 0.7;
-        }
+        :root { --bg-app: #11111b; --bg-card: #181825; --bg-frame: #1e1e2e; --bg-input: #313244; --border-color: rgba(255,255,255,0.08); --fg-text: #cdd6f4; --subtext: #9399b2; --overlay: rgba(17,17,27,0.85); --btn-blue: #89b4fa; --btn-green: #a6e3a1; --btn-red: #f38ba8; --accent-yellow: #f9e2af; --disabled-bg: #45475a; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-app); color: var(--fg-text); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; background-image: radial-gradient(circle at 50% 0%, rgba(137,180,250,0.05), transparent 70%); }
+        .container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 16px; }
+        
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
+        .header-brand { display: flex; align-items: center; gap: 10px; }
+        .header-logo-img { height: 42px; filter: drop-shadow(0 4px 12px rgba(137,180,250,0.25)); }
+        .header h1 { font-size: 24px; font-weight: 700; color: var(--fg-text); }
+        .auth-status { display: flex; align-items: center; gap: 10px; }
+        
+        .btn, .btn-auth, .modal-btn { border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .btn-auth { background: var(--bg-frame); border: 1px solid var(--border-color); color: var(--fg-text); padding: 6px 12px; font-size: 12px; }
+        .btn-auth:hover { border-color: var(--btn-blue); color: var(--btn-blue); }
+        
+        .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; position: relative; }
+        .card-title { position: absolute; top: -11px; left: 14px; background: var(--bg-app); padding: 0 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--subtext); border-radius: 4px; }
+        
+        .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+        .btn { padding: 12px 14px; font-size: 13px; color: #11111b; border-radius: 10px; }
+        .btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+        .btn:disabled { background: var(--disabled-bg) !important; color: var(--subtext) !important; cursor: not-allowed; opacity: 0.6; }
+        .btn-blue { background: var(--btn-blue); } .btn-red { background: var(--btn-red); } .btn-green { background: var(--btn-green); }
+        .btn-stop { background: var(--btn-red); width: 100%; margin-top: 10px; display: none; }
+        
+        .custom-form { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; text-align: left; }
+        .form-group label { font-size: 12px; font-weight: 600; color: var(--subtext); }
+        
+        .input-field, .textarea-field { background: var(--bg-frame); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 12px; color: var(--fg-text); font-size: 13px; outline: none; width: 100%; }
+        .input-field:focus, .textarea-field:focus { border-color: var(--btn-blue); }
+        .textarea-field { resize: vertical; min-height: 60px; }
+        
+        /* Input Addon untuk @gmail.com */
+        .input-group { display: flex; align-items: center; background: var(--bg-frame); border: 1px solid var(--border-color); border-radius: 8px; padding-right: 12px; transition: 0.2s; }
+        .input-group:focus-within { border-color: var(--btn-blue); }
+        .input-group .input-field { border: none; border-radius: 8px 0 0 8px; flex: 1; }
+        .input-group span { color: var(--subtext); font-size: 12px; font-weight: 500; }
+        
+        .status-frame { background: var(--bg-frame); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; min-height: 160px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; }
+        .status-header { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--subtext); margin-bottom: 8px; }
+        .pulse-dot { width: 8px; height: 8px; background: var(--subtext); border-radius: 50%; }
+        .pulse-dot.active { background: var(--btn-green); box-shadow: 0 0 8px var(--btn-green); }
+        .label-status { font-size: 13px; white-space: pre-line; line-height: 1.5; font-weight: 500; }
+        
+        .sys-logs { width: 100%; display: flex; flex-direction: column; gap: 4px; margin: 8px 0; }
+        .sys-log { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; }
+        .sys-log.green { color: var(--btn-green); } .sys-log.yellow { color: var(--accent-yellow); }
+        .timer-badge { background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); padding: 6px 16px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--btn-blue); display: none; }
+        
+        .logs-container { display: flex; flex-direction: column; gap: 10px; max-height: 240px; overflow-y: auto; margin-top: 6px; }
+        .log-item { background: var(--bg-frame); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; font-size: 12px; }
+        .log-header { display: flex; justify-content: space-between; color: var(--subtext); font-size: 11px; margin-bottom: 6px; }
+        .log-duration { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--btn-blue); }
+        .badge-cloud { background: rgba(166,227,161,0.2); color: var(--btn-green); font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
+        .badge-local { background: rgba(249,226,175,0.2); color: var(--accent-yellow); font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;}
+        .log-doc { color: var(--btn-green); font-size: 11px; text-decoration: none; word-break: break-all; display: block; margin-top: 4px;}
+        
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--overlay); backdrop-filter: blur(6px); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.2s; padding: 16px; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; width: 100%; max-width: 340px; text-align: center; transform: scale(0.95); transition: 0.2s; }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+        .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--btn-blue); }
+        .modal-body { font-size: 13px; color: var(--fg-text); margin-bottom: 18px; line-height: 1.5; white-space: pre-wrap; text-align: left;}
+        .modal-actions { display: flex; gap: 8px; justify-content: center; }
+        .modal-btn { flex: 1; padding: 10px; font-size: 13px; }
+        .modal-btn-primary { background: var(--btn-blue); color: #11111b; }
+        .modal-btn-green { background: var(--btn-green); color: #11111b; }
+        .modal-btn-secondary { background: var(--bg-input); color: var(--fg-text); }
+        .footer { text-align: center; font-size: 11px; color: var(--subtext); opacity: 0.7; }
     </style>
 </head>
 <body>
@@ -460,11 +90,11 @@
     <div class="container">
         <div class="header">
             <div class="header-brand">
-                <img src="FlowGuard Logo's.png" alt="FlowGuard Logo" class="header-logo-img" onerror="this.style.display='none'">
+                <img src="FlowGuard Logo's.png" alt="Logo" class="header-logo-img" onerror="this.style.display='none'">
                 <h1>FlowGuard</h1>
             </div>
             <div class="auth-status" id="auth-container">
-                <button class="btn-auth" id="btn-login">Login Google</button>
+                <!-- Diisi via JS -->
             </div>
         </div>
 
@@ -480,48 +110,30 @@
             <div class="card-title">Custom Mode</div>
             <div class="custom-form">
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="custom-hour">Work Hours</label>
-                        <input type="number" id="custom-hour" class="input-field" placeholder="1 or 1.5" step="0.1" min="0.1" max="24">
-                    </div>
-                    <div class="form-group">
-                        <label for="custom-break">Break (Hours)</label>
-                        <input type="number" id="custom-break" class="input-field" placeholder="0.5" step="0.1" min="0" max="24">
-                    </div>
+                    <div class="form-group"><label>Work Hours</label><input type="number" id="custom-hour" class="input-field" placeholder="1.5" step="0.1"></div>
+                    <div class="form-group"><label>Break (Hours)</label><input type="number" id="custom-break" class="input-field" placeholder="0.5" step="0.1"></div>
                 </div>
                 <button id="btn-custom" class="btn btn-green">Start Custom Mode</button>
             </div>
         </div>
 
         <div class="status-frame">
-            <div class="status-header">
-                <div id="pulse-dot" class="pulse-dot"></div>
-                <span>System Status</span>
-            </div>
-            
+            <div class="status-header"><div id="pulse-dot" class="pulse-dot"></div><span>System Status</span></div>
             <div id="label-status" class="label-status">Status program akan muncul di sini...</div>
-            
-            <div class="sys-logs">
-                <div id="label-sys" class="sys-log green"></div>
-                <div id="label-back" class="sys-log yellow"></div>
-            </div>
-
+            <div class="sys-logs"><div id="label-sys" class="sys-log green"></div><div id="label-back" class="sys-log yellow"></div></div>
             <div id="timer-badge" class="timer-badge">Sisa Waktu: <span id="time-left">00:00:00</span></div>
             <button id="btn-stop-work" class="btn btn-stop">Stop Working & Save Log</button>
         </div>
 
         <div class="card">
             <div class="card-title">Riwayat Kerja</div>
-            <div class="logs-container" id="logs-container">
-                <div style="text-align: center; color: var(--subtext); font-size: 12px; padding: 12px;">Belum ada riwayat kerja tersimpan.</div>
-            </div>
+            <div class="logs-container" id="logs-container"></div>
         </div>
 
-        <div class="footer">
-            © 2026 Jembar Muhammad Firdiana. Licensed under MIT License.
-        </div>
+        <div class="footer">© 2026 Jembar Muhammad Firdiana.</div>
     </div>
 
+    <!-- Modal Dinamis (Notifikasi/Sistem) -->
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-box">
             <div id="modal-title" class="modal-title">FlowGuard</div>
@@ -530,543 +142,266 @@
         </div>
     </div>
 
+    <!-- Modal Khusus Auth (Login/Register) -->
+    <div id="auth-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">Identitas Akun</div>
+            <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:18px;">
+                <div class="form-group">
+                    <label>Nama Akun (Tanpa Spasi)</label>
+                    <div class="input-group">
+                        <input type="text" id="auth-username" class="input-field" placeholder="contoh: jembar">
+                        <span>@gmail.com</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="auth-password" class="input-field" placeholder="Minimal 6 karakter">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="btn-auth-login" class="modal-btn modal-btn-primary">Masuk</button>
+                <button id="btn-auth-register" class="modal-btn modal-btn-secondary">Daftar Akun</button>
+            </div>
+            <div style="margin-top:12px;"><button id="btn-auth-close" style="background:none; border:none; color:var(--subtext); font-size:12px; cursor:pointer;">Batal</button></div>
+        </div>
+    </div>
+
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } from "firebase/firestore";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        // Ganti Auth Provider ke Email & Password yang lebih ringan
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyDa1BQzIYtMu5kDmWZyd-DiludUqrmQZC0",
             authDomain: "flowguard-web.firebaseapp.com",
             projectId: "flowguard-web",
-            storageBucket: "flowguard-web.firebasestorage.app",
-            messagingSenderId: "10592671311",
-            appId: "1:10592671311:web:6b1df4e0fd10cdcf62fc3a"
+            storageBucket: "flowguard-web.firebasestorage.app"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
 
-        let currentUser = null;
-        let isRunning = false;
-        let countdownInterval = null;
-        let alarmInterval = null;
-        let workStartTime = null;
-        let audioCtx = null;
+        let currentUser = null, isRunning = false, countdownInterval = null, alarmInterval = null, workStartTime = null, audioCtx = null;
 
-        // Element References
-        const authContainer = document.getElementById('auth-container');
-        const btnPreset1 = document.getElementById('btn-preset-1');
-        const btnPreset2 = document.getElementById('btn-preset-2');
-        const btnCustom = document.getElementById('btn-custom');
-        const btnStopWork = document.getElementById('btn-stop-work');
-        const customHourInput = document.getElementById('custom-hour');
-        const customBreakInput = document.getElementById('custom-break');
-        
-        const labelStatus = document.getElementById('label-status');
-        const labelSys = document.getElementById('label-sys');
-        const labelBack = document.getElementById('label-back');
-        const timerBadge = document.getElementById('timer-badge');
-        const timeLeftSpan = document.getElementById('time-left');
-        const pulseDot = document.getElementById('pulse-dot');
-        const logsContainer = document.getElementById('logs-container');
+        const ui = {
+            authContainer: document.getElementById('auth-container'),
+            preset1: document.getElementById('btn-preset-1'), preset2: document.getElementById('btn-preset-2'),
+            customBtn: document.getElementById('btn-custom'), stopBtn: document.getElementById('btn-stop-work'),
+            hourInput: document.getElementById('custom-hour'), breakInput: document.getElementById('custom-break'),
+            lblStatus: document.getElementById('label-status'), lblSys: document.getElementById('label-sys'),
+            lblBack: document.getElementById('label-back'), timerBadge: document.getElementById('timer-badge'),
+            timeLeft: document.getElementById('time-left'), pulse: document.getElementById('pulse-dot'),
+            logs: document.getElementById('logs-container'),
+            
+            authModal: document.getElementById('auth-modal'),
+            authUsername: document.getElementById('auth-username'),
+            authPass: document.getElementById('auth-password')
+        };
 
-        const modalOverlay = document.getElementById('custom-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalBody = document.getElementById('modal-body');
-        const modalActions = document.getElementById('modal-actions');
+        // --- AUTHENTICATION LOGIC ---
+        function toggleAuthModal(show) {
+            ui.authUsername.value = ''; ui.authPass.value = '';
+            show ? ui.authModal.classList.add('active') : ui.authModal.classList.remove('active');
+        }
 
-        // Audio System
+        document.getElementById('btn-auth-close').onclick = () => toggleAuthModal(false);
+
+        document.getElementById('btn-auth-login').onclick = async () => {
+            const user = ui.authUsername.value.trim().replace(/\s/g, ''); // Hapus spasi jika ada
+            const pass = ui.authPass.value;
+            if(!user || !pass) return alert("Harap isi Nama Akun dan Password!");
+            
+            try {
+                ui.lblStatus.textContent = "Sedang login...";
+                // Sistem otomatis nambahkan @gmail.com disini
+                await signInWithEmailAndPassword(auth, `${user}@gmail.com`, pass);
+                toggleAuthModal(false);
+            } catch(e) {
+                alert("Gagal masuk. Periksa kembali akun atau password Anda.");
+            }
+        };
+
+        document.getElementById('btn-auth-register').onclick = async () => {
+            const user = ui.authUsername.value.trim().replace(/\s/g, '');
+            const pass = ui.authPass.value;
+            if(!user || pass.length < 6) return alert("Nama akun wajib diisi & password minimal 6 karakter!");
+            
+            try {
+                // Otomatis daftar akun baru di Firebase menggunakan struktur dummy email
+                await createUserWithEmailAndPassword(auth, `${user}@gmail.com`, pass);
+                toggleAuthModal(false);
+                alert("Akun berhasil didaftarkan dan Anda sudah masuk!");
+            } catch(e) {
+                if(e.code === 'auth/email-already-in-use') alert("Nama akun ini sudah dipakai, silakan gunakan yang lain atau klik Masuk.");
+                else alert("Gagal daftar: " + e.message);
+            }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (user) {
+                // Ekstrak nama sebelum @gmail.com untuk ditampilkan di UI
+                const displayName = user.email.split('@')[0];
+                ui.authContainer.innerHTML = `
+                    <span style="font-size:13px; font-weight:700; color:var(--btn-blue);">Hi, ${displayName}</span>
+                    <button class="btn-auth" id="btn-logout">Logout</button>
+                `;
+                document.getElementById('btn-logout').onclick = () => { initAudio(); signOut(auth); };
+                await syncLocalLogsToCloud();
+            } else {
+                ui.authContainer.innerHTML = `<button class="btn-auth" id="btn-login-trigger">Masuk / Daftar</button>`;
+                document.getElementById('btn-login-trigger').onclick = () => { initAudio(); toggleAuthModal(true); };
+            }
+            renderLogs();
+        });
+
+        // --- CORE SYSTEM & LOGS LOGIC ---
         function initAudio() {
-            if (!audioCtx) {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (AudioContext) audioCtx = new AudioContext();
-            }
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if (!audioCtx) { const AudioContext = window.AudioContext || window.webkitAudioContext; if (AudioContext) audioCtx = new AudioContext(); }
+            if (audioCtx?.state === 'suspended') audioCtx.resume();
         }
 
         function playMelody() {
             if (!audioCtx) return;
-            try {
-                const playNote = (freq, startTime, duration) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + startTime);
-                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime + startTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + startTime + duration);
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.start(audioCtx.currentTime + startTime);
-                    osc.stop(audioCtx.currentTime + startTime + duration);
-                };
-                playNote(523.25, 0.0, 0.25);
-                playNote(659.25, 0.15, 0.25);
-                playNote(783.99, 0.30, 0.40);
-            } catch (e) {
-                console.error('Audio playback error:', e);
-            }
+            const playNote = (f, s, d) => {
+                const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                o.type = 'sine'; o.frequency.setValueAtTime(f, audioCtx.currentTime + s);
+                g.gain.setValueAtTime(0.25, audioCtx.currentTime + s); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + s + d);
+                o.connect(g); g.connect(audioCtx.destination); o.start(audioCtx.currentTime + s); o.stop(audioCtx.currentTime + s + d);
+            };
+            playNote(523.25, 0, 0.25); playNote(659.25, 0.15, 0.25); playNote(783.99, 0.3, 0.4);
         }
 
-        function startAlarmLoop() {
-            initAudio();
-            stopAlarmLoop();
-            playMelody();
-            alarmInterval = setInterval(playMelody, 1500); 
-        }
+        function formatSec(s) { return `${Math.floor(s/3600).toString().padStart(2,'0')}:${Math.floor((s%3600)/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
 
-        function stopAlarmLoop() {
-            if (alarmInterval) {
-                clearInterval(alarmInterval);
-                alarmInterval = null;
-            }
-        }
-
-        function formatSeconds(sec) {
-            const h = Math.floor(sec / 3600).toString().padStart(2, '0');
-            const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
-            const s = (sec % 60).toString().padStart(2, '0');
-            return `${h}:${m}:${s}`;
-        }
-
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        function sanitizeUrl(urlStr) {
-            if (!urlStr) return '';
-            const trimmed = urlStr.trim();
-            if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-                return trimmed;
-            }
-            return 'https://' + trimmed;
-        }
-
-        function showCustomModal(title, textOrHtml, buttons) {
-            return new Promise((resolve) => {
-                startAlarmLoop();
-                modalTitle.textContent = title;
-                if (typeof textOrHtml === 'string' && !textOrHtml.includes('<')) {
-                    modalBody.textContent = textOrHtml;
-                } else {
-                    modalBody.innerHTML = textOrHtml;
-                }
-                modalActions.innerHTML = '';
-
-                buttons.forEach(btnConfig => {
-                    const btn = document.createElement('button');
-                    btn.className = `modal-btn ${btnConfig.class || 'modal-btn-primary'}`;
-                    btn.textContent = btnConfig.text;
-                    btn.onclick = () => {
-                        stopAlarmLoop();
-                        modalOverlay.classList.remove('active');
-                        resolve(btnConfig.value ? btnConfig.value() : true);
-                    };
-                    modalActions.appendChild(btn);
+        function showCustomModal(title, text, btns) {
+            return new Promise((res) => {
+                initAudio(); if(alarmInterval) clearInterval(alarmInterval); playMelody(); alarmInterval = setInterval(playMelody, 1500);
+                const overlay = document.getElementById('custom-modal');
+                document.getElementById('modal-title').textContent = title;
+                document.getElementById('modal-body').innerHTML = text;
+                const acts = document.getElementById('modal-actions'); acts.innerHTML = '';
+                btns.forEach(b => {
+                    const btn = document.createElement('button'); btn.className = `modal-btn ${b.class}`; btn.textContent = b.text;
+                    btn.onclick = () => { if(alarmInterval) clearInterval(alarmInterval); overlay.classList.remove('active'); res(b.value ? b.value() : true); };
+                    acts.appendChild(btn);
                 });
-
-                modalOverlay.classList.add('active');
+                overlay.classList.add('active');
             });
         }
-
-        async function showAlert(text, title = "FlowGuard") {
-            return showCustomModal(title, text, [{ text: 'OK', value: () => true, class: 'modal-btn-primary' }]);
-        }
+        
+        const showAlert = (text, title = "FlowGuard") => showCustomModal(title, text, [{ text: 'OK', value: ()=>true, class: 'modal-btn-primary' }]);
 
         function setUILock(locked) {
-            btnPreset1.disabled = locked;
-            btnPreset2.disabled = locked;
-            btnCustom.disabled = locked;
-            customHourInput.disabled = locked;
-            customBreakInput.disabled = locked;
-            
-            if (locked) {
-                pulseDot.classList.add('active');
-                btnStopWork.style.display = 'block';
-            } else {
-                pulseDot.classList.remove('active');
-                btnStopWork.style.display = 'none';
-                timerBadge.style.display = 'none';
-            }
+            ui.preset1.disabled = locked; ui.preset2.disabled = locked; ui.customBtn.disabled = locked;
+            ui.hourInput.disabled = locked; ui.breakInput.disabled = locked;
+            locked ? (ui.pulse.classList.add('active'), ui.stopBtn.style.display = 'block') : (ui.pulse.classList.remove('active'), ui.stopBtn.style.display = 'none', ui.timerBadge.style.display = 'none');
         }
 
-        function startCountdown(seconds) {
-            return new Promise((resolve) => {
-                let remaining = seconds;
-                timerBadge.style.display = 'block';
-                timeLeftSpan.textContent = formatSeconds(remaining);
-
+        function startCountdown(sec) {
+            return new Promise((res) => {
+                let r = sec; ui.timerBadge.style.display = 'block'; ui.timeLeft.textContent = formatSec(r);
                 if (countdownInterval) clearInterval(countdownInterval);
-
                 countdownInterval = setInterval(() => {
-                    if (!isRunning) {
-                        clearInterval(countdownInterval);
-                        timerBadge.style.display = 'none';
-                        resolve();
-                        return;
-                    }
-                    remaining--;
-                    timeLeftSpan.textContent = formatSeconds(remaining);
-
-                    if (remaining <= 0) {
-                        clearInterval(countdownInterval);
-                        timerBadge.style.display = 'none';
-                        resolve();
-                    }
+                    if (!isRunning) return clearInterval(countdownInterval), ui.timerBadge.style.display = 'none', res();
+                    r--; ui.timeLeft.textContent = formatSec(r);
+                    if (r <= 0) { clearInterval(countdownInterval); ui.timerBadge.style.display = 'none'; res(); }
                 }, 1000);
             });
         }
 
-        // Local Storage & Cloud Sync Operations
-        function getLocalLogs() {
-            try {
-                return JSON.parse(localStorage.getItem('flowguard_logs') || '[]');
-            } catch (e) {
-                return [];
-            }
-        }
-
-        function saveLocalLog(log) {
-            const logs = getLocalLogs();
-            logs.unshift(log);
-            localStorage.setItem('flowguard_logs', JSON.stringify(logs));
-        }
-
+        const getLocalLogs = () => JSON.parse(localStorage.getItem('flowguard_logs') || '[]');
+        
         async function syncLocalLogsToCloud() {
             if (!currentUser) return;
-            const localLogs = getLocalLogs();
-            if (localLogs.length === 0) return;
-
-            for (const log of localLogs) {
-                try {
-                    await addDoc(collection(db, "work_logs"), {
-                        userId: currentUser.uid,
-                        durationFormatted: log.durationFormatted,
-                        secondsWorked: log.secondsWorked,
-                        taskDescription: log.taskDescription,
-                        docLink: log.docLink,
-                        createdAt: new Date(log.timestamp)
-                    });
-                } catch (e) {
-                    console.error("Gagal migrasi data lokal ke cloud:", e);
-                }
+            const locals = getLocalLogs(); if (!locals.length) return;
+            for (const log of locals) {
+                try { await addDoc(collection(db, "work_logs"), { userId: currentUser.uid, durationFormatted: log.durationFormatted, secondsWorked: log.secondsWorked, taskDescription: log.taskDescription, docLink: log.docLink, createdAt: new Date(log.timestamp) }); } catch(e){}
             }
             localStorage.removeItem('flowguard_logs');
         }
 
-        async function saveWorkLog(secondsWorked, taskDescription, docLink) {
-            const durationFormatted = formatSeconds(secondsWorked);
-            const timestamp = new Date().toISOString();
-            const cleanDocLink = docLink ? sanitizeUrl(docLink) : '';
-
-            if (currentUser) {
-                try {
-                    await addDoc(collection(db, "work_logs"), {
-                        userId: currentUser.uid,
-                        durationFormatted,
-                        secondsWorked,
-                        taskDescription,
-                        docLink: cleanDocLink,
-                        createdAt: serverTimestamp()
-                    });
-                } catch (e) {
-                    console.error("Gagal menyimpan log ke Cloud:", e);
-                }
-            } else {
-                saveLocalLog({
-                    id: Date.now().toString(),
-                    durationFormatted,
-                    secondsWorked,
-                    taskDescription,
-                    docLink: cleanDocLink,
-                    timestamp
-                });
-            }
-            renderLogs();
-        }
-
         async function renderLogs() {
-            logsContainer.innerHTML = '';
-            let logs = [];
-
+            ui.logs.innerHTML = ''; let logs = [];
             if (currentUser) {
                 try {
-                    const q = query(
-                        collection(db, "work_logs"), 
-                        where("userId", "==", currentUser.uid),
-                        orderBy("createdAt", "desc")
-                    );
-                    const querySnapshot = await getDocs(q);
-                    querySnapshot.forEach((doc) => {
-                        const data = doc.data();
-                        logs.push({
-                            ...data,
-                            isCloud: true,
-                            dateStr: data.createdAt ? new Date(data.createdAt.toDate()).toLocaleString('id-ID') : new Date().toLocaleString('id-ID')
-                        });
-                    });
-                } catch (e) {
-                    console.error("Gagal mengambil log Firestore:", e);
-                }
-            } else {
-                logs = getLocalLogs().map(l => ({
-                    ...l,
-                    isCloud: false,
-                    dateStr: new Date(l.timestamp).toLocaleString('id-ID')
-                }));
-            }
-
-            if (logs.length === 0) {
-                logsContainer.innerHTML = `<div style="text-align: center; color: var(--subtext); font-size: 12px; padding: 12px;">Belum ada riwayat kerja tersimpan.</div>`;
-                return;
-            }
-
-            logs.forEach(log => {
-                const el = document.createElement('div');
-                el.className = 'log-item';
-                
-                const taskText = log.taskDescription ? log.taskDescription : 'Tanpa deskripsi pekerjaan';
-                const docHtml = log.docLink ? `<a href="${log.docLink}" target="_blank" rel="noopener noreferrer" class="log-doc">Dokumentasi: ${log.docLink}</a>` : '';
-
-                el.innerHTML = `
-                    <div class="log-header">
-                        <span>${log.dateStr}</span>
-                        <div style="display:flex; gap:6px; align-items:center;">
-                            <span class="log-duration">${log.durationFormatted}</span>
-                            <span class="badge-storage ${log.isCloud ? 'badge-cloud' : 'badge-local'}">${log.isCloud ? 'Cloud' : 'Lokal'}</span>
-                        </div>
-                    </div>
-                    <div class="log-task"></div>
-                    ${docHtml}
-                `;
-                
-                el.querySelector('.log-task').textContent = taskText;
-                logsContainer.appendChild(el);
+                    const q = query(collection(db, "work_logs"), where("userId", "==", currentUser.uid), orderBy("createdAt", "desc"));
+                    (await getDocs(q)).forEach(doc => logs.push({...doc.data(), isCloud: true, dateStr: doc.data().createdAt?.toDate().toLocaleString('id-ID') || new Date().toLocaleString('id-ID') }));
+                } catch(e){}
+            } else { logs = getLocalLogs().map(l => ({...l, isCloud: false, dateStr: new Date(l.timestamp).toLocaleString('id-ID')})); }
+            
+            if (!logs.length) return ui.logs.innerHTML = `<div style="text-align:center; color:var(--subtext); font-size:12px; padding:12px;">Belum ada riwayat kerja.</div>`;
+            
+            logs.forEach(l => {
+                const doc = l.docLink ? `<a href="${l.docLink.startsWith('http') ? l.docLink : 'https://'+l.docLink}" target="_blank" class="log-doc">Link Dokumen</a>` : '';
+                ui.logs.innerHTML += `
+                    <div class="log-item">
+                        <div class="log-header"><span>${l.dateStr}</span><div style="display:flex;gap:6px;align-items:center"><span class="log-duration">${l.durationFormatted}</span><span class="badge-cloud ${l.isCloud?'':'badge-local'}">${l.isCloud?'Cloud':'Lokal'}</span></div></div>
+                        <div style="font-weight:600;color:var(--fg-text);">${l.taskDescription || 'Tanpa deskripsi'}</div>${doc}
+                    </div>`;
             });
         }
 
-        // Stop Work Session Handler
-        async function stopWorkSession() {
-            initAudio();
-            isRunning = false;
-            if (countdownInterval) clearInterval(countdownInterval);
-            stopAlarmLoop();
+        ui.stopBtn.onclick = async () => {
+            initAudio(); isRunning = false; if(countdownInterval) clearInterval(countdownInterval); if(alarmInterval) clearInterval(alarmInterval);
+            const sec = workStartTime ? Math.max(0, Math.floor((Date.now() - workStartTime)/1000)) : 0;
+            const form = `<div style="display:flex;flex-direction:column;gap:10px;"><div><strong>Durasi Kerja:</strong> ${formatSec(sec)}</div>
+                <div class="form-group"><label>Apa yang dikerjakan?</label><textarea id="m-task" class="textarea-field"></textarea></div>
+                <div class="form-group"><label>Link Dokumen (Opsional)</label><input type="url" id="m-doc" class="input-field"></div></div>`;
+            
+            await showCustomModal("Simpan Riwayat", form, [
+                { text: 'Simpan', class: 'modal-btn-green', value: async () => {
+                    const d = { userId: currentUser?.uid, durationFormatted: formatSec(sec), secondsWorked: sec, taskDescription: document.getElementById('m-task').value.trim(), docLink: document.getElementById('m-doc').value.trim() };
+                    if(currentUser) { d.createdAt = serverTimestamp(); await addDoc(collection(db, "work_logs"), d); }
+                    else { d.timestamp = new Date().toISOString(); const ls = getLocalLogs(); ls.unshift(d); localStorage.setItem('flowguard_logs', JSON.stringify(ls)); }
+                    renderLogs();
+                }},
+                { text: 'Buang', class: 'modal-btn-secondary', value: ()=>false }
+            ]);
+            ui.lblStatus.textContent = "Sesi dihentikan."; ui.lblSys.textContent = ""; ui.lblBack.textContent = ""; setUILock(false);
+        };
 
-            const secondsWorked = workStartTime ? Math.max(0, Math.floor((Date.now() - workStartTime) / 1000)) : 0;
-            const durationFormatted = formatSeconds(secondsWorked);
-
-            const formHtml = `
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <div><strong>Durasi Kerja:</strong> ${durationFormatted}</div>
-                    <div class="form-group">
-                        <label for="modal-task">Apa yang sudah kamu kerjakan?</label>
-                        <textarea id="modal-task" class="textarea-field" placeholder="Contoh: Membuat fitur modul login"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="modal-doc">Link Dokumentasi (Opsional)</label>
-                        <input type="url" id="modal-doc" class="input-field" placeholder="https://notion.so/... atau Drive Link">
-                    </div>
-                </div>
-            `;
-
-            await showCustomModal(
-                "Simpan Riwayat Kerja",
-                formHtml,
-                [
-                    { 
-                        text: 'Simpan', 
-                        class: 'modal-btn-green',
-                        value: () => {
-                            const task = document.getElementById('modal-task').value.trim();
-                            const doc = document.getElementById('modal-doc').value.trim();
-                            saveWorkLog(secondsWorked, task, doc);
-                        }
-                    },
-                    { text: 'Batal Tanpa Menyimpan', class: 'modal-btn-secondary', value: () => false }
-                ]
-            );
-
-            labelStatus.textContent = "Sesi kerja dihentikan.";
-            labelSys.textContent = "";
-            labelBack.textContent = "";
-            setUILock(false);
-        }
-
-        // Execution Engine
-        async function processSession(mode, workDurationSeconds, breakDurationSeconds, breakText) {
-            let workHour = 1;
-
-            while (isRunning) {
-                const now = new Date();
-                const currentHour = now.getHours();
-                const currentMinute = now.getMinutes().toString().padStart(2, '0');
+        async function processSession(w, b, bTxt) {
+            let hour = 1;
+            while(isRunning) {
+                ui.lblStatus.textContent = `===== Information =====\nHour #${hour} | Started: ${new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}\n=====================`;
+                if(new Date().getHours() < 5) if(await showCustomModal("Warning", "Past midnight. Sleep?", [{text:'OK (Shutdown)', value:()=>'Y', class:'modal-btn-primary'}, {text:'No', value:()=>'N', class:'modal-btn-secondary'}]) === 'Y') return (isRunning = false, setUILock(false));
                 
-                labelStatus.textContent = `===== Information =====\nThis is work hour #${workHour}\nStarted at ${currentHour.toString().padStart(2, '0')}:${currentMinute}\n=====================`;
-
-                if (currentHour >= 0 && currentHour < 5) {
-                    const askSleep = await showCustomModal(
-                        "System Warning", 
-                        "It's past 00:00, time to sleep.\nShutdown?", 
-                        [
-                            { text: 'OK (Shutdown)', value: () => 'OK', class: 'modal-btn-primary' },
-                            { text: 'No', value: () => 'No', class: 'modal-btn-secondary' }
-                        ]
-                    );
-
-                    if (!isRunning) break;
-
-                    if (askSleep === "OK") {
-                        labelStatus.textContent = "SYSTEM SHUTDOWN SIMULATED";
-                        labelSys.textContent = "Computer was shut down.";
-                        setUILock(false);
-                        isRunning = false;
-                        return;
-                    }
-                }
-
-                await startCountdown(workDurationSeconds);
-                if (!isRunning) break;
-
-                if (workDurationSeconds >= 3600) {
-                    await showAlert("One hour has passed...", "FlowGuard");
-                } else {
-                    await showAlert("Custom work time has passed...", "FlowGuard");
-                }
-                if (!isRunning) break;
-
-                while (isRunning) {
-                    const askWater = await showCustomModal(
-                        "Hydration Reminder",
-                        "Have you drank water?",
-                        [
-                            { text: 'Yes', value: () => 'Yes', class: 'modal-btn-green' },
-                            { text: 'Not yet', value: () => 'Not yet', class: 'modal-btn-secondary' }
-                        ]
-                    );
-
-                    if (!isRunning) break;
-
-                    if (askWater === "Yes") {
-                        labelSys.textContent = "SYSTEM : Good, you are now hydrated.";
-                        labelSys.className = "sys-log green";
-                        break;
-                    } else {
-                        await showAlert("Okay, I will wait 5 minutes before reminding you again.", "FlowGuard");
-                        if (!isRunning) break;
-                        await startCountdown(300);
-                    }
-                }
-                if (!isRunning) break;
-
-                if (breakDurationSeconds > 0) {
-                    await showAlert(`Time to take a break for ${breakText}..`, "FlowGuard");
-                    if (!isRunning) break;
-
-                    labelSys.textContent = `SYSTEM : Time to rest for ${breakText}..`;
-                    labelSys.className = "sys-log yellow";
-
-                    const returnTime = new Date(Date.now() + breakDurationSeconds * 1000);
-                    const returnH = returnTime.getHours().toString().padStart(2, '0');
-                    const returnM = returnTime.getMinutes().toString().padStart(2, '0');
-                    labelBack.textContent = `SYSTEM : Back to work at ${returnH}:${returnM}`;
-
-                    await startCountdown(breakDurationSeconds);
-                    if (!isRunning) break;
-
-                    await showAlert("Break time is over, let's get back to work boss!", "FlowGuard");
-                    labelBack.textContent = "";
-                }
-
-                labelSys.textContent = "SYSTEM : Back to work boss!";
-                labelSys.className = "sys-log green";
-                workHour++;
-                await sleep(1000);
-            }
-        }
-
-        function startProgram(mode) {
-            initAudio();
-
-            let workDurationSeconds = 3600;
-            let breakDurationSeconds = 0;
-            let breakText = "";
-
-            if (mode === "with_break") {
-                breakDurationSeconds = 1800;
-                breakText = "30 minutes";
-            } else if (mode === "no_break") {
-                breakDurationSeconds = 0;
-                breakText = "0 minutes";
-            } else if (mode === "custom") {
-                const hourVal = parseFloat(customHourInput.value.trim());
-                const breakVal = parseFloat(customBreakInput.value.trim() || "0");
-
-                if (isNaN(hourVal) || hourVal <= 0 || hourVal > 24) {
-                    showAlert("Jam kerja harus berupa angka antara 0.1 sampai 24 jam!", "Input Tidak Valid");
-                    return;
-                }
+                await startCountdown(w); if(!isRunning) break;
+                await showAlert(w >= 3600 ? "One hour has passed..." : "Work time has passed..."); if(!isRunning) break;
                 
-                if (isNaN(breakVal) || breakVal < 0 || breakVal > 24) {
-                    showAlert("Jam istirahat harus berupa angka antara 0 sampai 24 jam!", "Input Tidak Valid");
-                    return;
+                while(isRunning) {
+                    if(await showCustomModal("Hydration", "Have you drank water?", [{text:'Yes', value:()=>'Y', class:'modal-btn-green'},{text:'Not yet', value:()=>'N', class:'modal-btn-secondary'}]) === 'Y') {
+                        ui.lblSys.textContent = "SYSTEM : Good, hydrated."; ui.lblSys.className = "sys-log green"; break;
+                    }
+                    await showAlert("I will wait 5 minutes."); if(!isRunning) break; await startCountdown(300);
                 }
+                if(!isRunning) break;
 
-                workDurationSeconds = Math.round(hourVal * 3600);
-                breakDurationSeconds = Math.round(breakVal * 3600);
-                breakText = breakVal >= 1 ? `${breakVal} jam` : `${Math.round(breakVal * 60)} menit`;
+                if(b > 0) {
+                    await showAlert(`Time to break for ${bTxt}..`); if(!isRunning) break;
+                    ui.lblSys.textContent = `SYSTEM : Resting ${bTxt}..`; ui.lblSys.className = "sys-log yellow";
+                    const ret = new Date(Date.now() + b*1000);
+                    ui.lblBack.textContent = `SYSTEM : Back at ${ret.getHours().toString().padStart(2,'0')}:${ret.getMinutes().toString().padStart(2,'0')}`;
+                    await startCountdown(b); if(!isRunning) break;
+                    await showAlert("Break is over, back to work boss!"); ui.lblBack.textContent = "";
+                }
+                ui.lblSys.textContent = "SYSTEM : Back to work boss!"; ui.lblSys.className = "sys-log green"; hour++;
             }
-
-            isRunning = true;
-            workStartTime = Date.now();
-            setUILock(true);
-            processSession(mode, workDurationSeconds, breakDurationSeconds, breakText);
         }
 
-        // Programmatic Event Binding
-        btnPreset1.addEventListener('click', () => startProgram('with_break'));
-        btnPreset2.addEventListener('click', () => startProgram('no_break'));
-        btnCustom.addEventListener('click', () => startProgram('custom'));
-        btnStopWork.addEventListener('click', () => stopWorkSession());
+        const run = (w, b, txt) => { initAudio(); isRunning = true; workStartTime = Date.now(); setUILock(true); processSession(w, b, txt); };
+        ui.preset1.onclick = () => run(3600, 1800, "30 minutes");
+        ui.preset2.onclick = () => run(3600, 0, "0 minutes");
+        ui.customBtn.onclick = () => {
+            const h = parseFloat(ui.hourInput.value), b = parseFloat(ui.breakInput.value || 0);
+            if(!h || h<=0 || h>24 || b<0 || b>24) return showAlert("Input tidak valid. Max 24 jam.");
+            run(Math.round(h*3600), Math.round(b*3600), b>=1 ? `${b} jam` : `${b*60} menit`);
+        };
 
-        // Input Sanitize Limits
-        customHourInput.addEventListener('input', (e) => {
-            if (parseFloat(e.target.value) > 24) e.target.value = 24;
-        });
-        customBreakInput.addEventListener('input', (e) => {
-            if (parseFloat(e.target.value) > 24) e.target.value = 24;
-        });
-
-        // Authentication State Listener
-        onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
-            if (user) {
-                authContainer.innerHTML = `
-                    <img src="${user.photoURL || ''}" alt="Avatar" class="user-avatar" onerror="this.style.display='none'">
-                    <button class="btn-auth" id="btn-logout">Logout</button>
-                `;
-                document.getElementById('btn-logout').addEventListener('click', () => {
-                    initAudio();
-                    signOut(auth);
-                });
-                await syncLocalLogsToCloud();
-            } else {
-                authContainer.innerHTML = `<button class="btn-auth" id="btn-login">Login Google</button>`;
-                document.getElementById('btn-login').addEventListener('click', async () => {
-                    initAudio();
-                    try {
-                        await signInWithPopup(auth, provider);
-                    } catch (err) {
-                        console.error("Login Error:", err);
-                    }
-                });
-            }
-            renderLogs();
-        });
-
-        // Initial Load
         renderLogs();
     </script>
 </body>

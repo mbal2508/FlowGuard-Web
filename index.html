@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Meta CSP: Diperbarui tanpa server Auth karena sistem login sudah dihapus -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:;">
+    <!-- Meta CSP: Diperbarui agar mengizinkan script dari luar (Firebase, Google Fonts, dll) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval';">
     
     <title>FlowGuard - Worktime & Tracker</title>
     
@@ -87,7 +87,6 @@
                 <img src="FlowGuard Logo's.png" alt="Logo" class="header-logo-img" onerror="this.style.display='none'">
                 <h1>FlowGuard</h1>
             </div>
-            <!-- Bagian Auth Dihapus -->
         </div>
 
         <!-- Mode Cepat -->

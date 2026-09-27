@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Meta CSP Final: Mengizinkan Firebase Auth, Firestore, Font, dan Script Internal -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:;">
+    <!-- Meta CSP: Diperbarui tanpa server Auth karena sistem login sudah dihapus -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:;">
     
     <title>FlowGuard - Worktime & Tracker</title>
     
@@ -22,11 +22,8 @@
         .header-brand { display: flex; align-items: center; gap: 10px; }
         .header-logo-img { height: 42px; filter: drop-shadow(0 4px 12px rgba(137,180,250,0.25)); }
         .header h1 { font-size: 24px; font-weight: 700; color: var(--fg-text); }
-        .auth-status { display: flex; align-items: center; gap: 10px; }
         
-        .btn, .btn-auth, .modal-btn { border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
-        .btn-auth { background: var(--bg-frame); border: 1px solid var(--border-color); color: var(--fg-text); padding: 6px 12px; font-size: 12px; }
-        .btn-auth:hover { border-color: var(--btn-blue); color: var(--btn-blue); }
+        .btn, .modal-btn { border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
         
         .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; position: relative; }
         .card-title { position: absolute; top: -11px; left: 14px; background: var(--bg-app); padding: 0 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--subtext); border-radius: 4px; }
@@ -90,9 +87,7 @@
                 <img src="FlowGuard Logo's.png" alt="Logo" class="header-logo-img" onerror="this.style.display='none'">
                 <h1>FlowGuard</h1>
             </div>
-            <div class="auth-status" id="auth-container">
-                <!-- Diisi via JS -->
-            </div>
+            <!-- Bagian Auth Dihapus -->
         </div>
 
         <!-- Mode Cepat -->
@@ -135,28 +130,6 @@
         <div class="footer">© 2026 Jembar Muhammad Firdiana.</div>
     </div>
 
-    <!-- Modal Khusus Auth (Login/Register) -->
-    <div id="auth-modal" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title">Identitas Akun</div>
-            <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:18px;">
-                <div class="form-group">
-                    <label>Username / Nama Pengguna (Tanpa Spasi)</label>
-                    <input type="text" id="auth-username" class="input-field" placeholder="contoh: jembar">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="auth-password" class="input-field" placeholder="Minimal 6 karakter">
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button id="btn-auth-login" class="modal-btn modal-btn-primary">Masuk</button>
-                <button id="btn-auth-register" class="modal-btn modal-btn-secondary">Daftar</button>
-            </div>
-            <div style="margin-top:12px;"><button id="btn-auth-close" style="background:none; border:none; color:var(--subtext); font-size:12px; cursor:pointer;">Batal</button></div>
-        </div>
-    </div>
-
     <!-- Modal Standar Sistem (Dialog Timer) -->
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-box">
@@ -169,10 +142,9 @@
     <!-- LOGIKA JAVASCRIPT & FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-        // Konfigurasi Firebase (Project Anda)
+        // Konfigurasi Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDa1BQzIYtMu5kDmWZyd-DiludUqrmQZC0",
             authDomain: "flowguard-web.firebaseapp.com",
@@ -181,28 +153,20 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Paksa Persistensi agar tidak logout sendiri (terutama di incognito)
-        setPersistence(auth, browserLocalPersistence).catch((error) => {
-            console.warn("Sistem penyimpanan sesi diblokir (mungkin Incognito). Anda mungkin harus login ulang setelah me-refresh.");
-        });
-
         // Variabel Global
-        let currentUser = null, isRunning = false, countdownInterval = null, alarmInterval = null, workStartTime = null, audioCtx = null;
+        let isRunning = false, countdownInterval = null, alarmInterval = null, workStartTime = null, audioCtx = null;
 
         // Elemen UI
         const ui = {
-            authContainer: document.getElementById('auth-container'),
             preset1: document.getElementById('btn-preset-1'), preset2: document.getElementById('btn-preset-2'),
             customBtn: document.getElementById('btn-custom'), stopBtn: document.getElementById('btn-stop-work'),
             hourInput: document.getElementById('custom-hour'), breakInput: document.getElementById('custom-break'),
             lblStatus: document.getElementById('label-status'), lblSys: document.getElementById('label-sys'),
             lblBack: document.getElementById('label-back'), timerBadge: document.getElementById('timer-badge'),
             timeLeft: document.getElementById('time-left'), pulse: document.getElementById('pulse-dot'),
-            logs: document.getElementById('logs-container'),
-            authModal: document.getElementById('auth-modal'), authUsername: document.getElementById('auth-username'), authPass: document.getElementById('auth-password')
+            logs: document.getElementById('logs-container')
         };
 
         // --- SISTEM BACA LOG LOKAL ---
@@ -213,80 +177,10 @@
                 const parsedData = JSON.parse(data);
                 return Array.isArray(parsedData) ? parsedData : [];
             } catch (error) {
-                console.warn("Format data lokal versi lama terdeteksi, membersihkan data yang error agar web tidak crash...");
                 localStorage.removeItem('flowguard_logs');
                 return [];
             }
         };
-
-        // --- SISTEM AUTENTIKASI UI ---
-        function toggleAuthModal(show) {
-            ui.authUsername.value = ''; ui.authPass.value = '';
-            show ? ui.authModal.classList.add('active') : ui.authModal.classList.remove('active');
-        }
-
-        document.getElementById('btn-auth-close').onclick = () => toggleAuthModal(false);
-
-        // Fungsi Login
-        document.getElementById('btn-auth-login').onclick = async () => {
-            const user = ui.authUsername.value.trim().replace(/\s/g, '');
-            const pass = ui.authPass.value;
-            if(!user || !pass) return alert("Harap isi Username dan Password!");
-            
-            const btn = document.getElementById('btn-auth-login');
-            btn.disabled = true; btn.textContent = "Memproses...";
-            
-            try {
-                ui.lblStatus.textContent = "Sedang login...";
-                await signInWithEmailAndPassword(auth, `${user}@flowguard.com`, pass); 
-                toggleAuthModal(false);
-                ui.lblStatus.textContent = "Login berhasil!";
-            } catch(e) {
-                if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') alert("Username atau password salah!");
-                else if (e.code === 'auth/network-request-failed') alert("Koneksi terputus. Matikan AdBlock atau periksa koneksi internet.");
-                else alert("Gagal masuk: " + e.message);
-                ui.lblStatus.textContent = "Gagal login.";
-            } finally {
-                btn.disabled = false; btn.textContent = "Masuk";
-            }
-        };
-
-        // Fungsi Register
-        document.getElementById('btn-auth-register').onclick = async () => {
-            const user = ui.authUsername.value.trim().replace(/\s/g, '');
-            const pass = ui.authPass.value;
-            if(!user || pass.length < 6) return alert("Username wajib diisi & password minimal 6 karakter!");
-            
-            const btn = document.getElementById('btn-auth-register');
-            btn.disabled = true; btn.textContent = "Memproses...";
-            
-            try {
-                await createUserWithEmailAndPassword(auth, `${user}@flowguard.com`, pass);
-                toggleAuthModal(false);
-                alert("Akun berhasil didaftarkan dan Anda sudah otomatis masuk!");
-            } catch(e) {
-                if(e.code === 'auth/email-already-in-use') alert("Username ini sudah dipakai, silakan gunakan yang lain.");
-                else if (e.code === 'auth/network-request-failed') alert("Koneksi diblokir oleh browser. Periksa ekstensi (seperti AdBlock).");
-                else alert("Gagal daftar: " + e.message);
-            } finally {
-                btn.disabled = false; btn.textContent = "Daftar";
-            }
-        };
-
-        // Pemantau Sesi Login
-        onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
-            if (user) {
-                const displayName = user.email.split('@')[0];
-                ui.authContainer.innerHTML = `<span style="font-size:13px; font-weight:700; color:var(--btn-blue);">Hi, ${displayName}</span><button class="btn-auth" id="btn-logout">Logout</button>`;
-                document.getElementById('btn-logout').onclick = () => { initAudio(); signOut(auth); };
-                await syncLocalLogsToCloud();
-            } else {
-                ui.authContainer.innerHTML = `<button class="btn-auth" id="btn-login-trigger">Masuk / Daftar</button>`;
-                document.getElementById('btn-login-trigger').onclick = () => { initAudio(); toggleAuthModal(true); };
-            }
-            renderLogs();
-        });
 
         // --- SISTEM AUDIO DAN WAKTU ---
         function initAudio() {
@@ -342,36 +236,42 @@
                 }, 1000);
             });
         }
-        
-        // --- SISTEM PENYIMPANAN LOG ---
-        async function syncLocalLogsToCloud() {
-            if (!currentUser) return;
-            const locals = getLocalLogs(); if (!locals.length) return;
-            for (const log of locals) {
-                try { await addDoc(collection(db, "work_logs"), { userId: currentUser.uid, durationFormatted: log.durationFormatted || "00:00", secondsWorked: log.secondsWorked || 0, taskDescription: log.taskDescription || "Lokal", docLink: log.docLink || "", createdAt: new Date(log.timestamp || Date.now()) }); } catch(e){}
-            }
-            localStorage.removeItem('flowguard_logs');
-        }
 
+        // --- SISTEM PENGAMBILAN & PENYIMPANAN LOG ---
         async function renderLogs() {
-            ui.logs.innerHTML = ''; let logs = [];
-            if (currentUser) {
-                try {
-                    const q = query(collection(db, "work_logs"), where("userId", "==", currentUser.uid), orderBy("createdAt", "desc"));
-                    const snap = await getDocs(q);
-                    snap.forEach(doc => {
-                        const data = doc.data();
-                        const dateStr = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString('id-ID') : new Date().toLocaleString('id-ID');
-                        logs.push({...data, isCloud: true, dateStr});
-                    });
-                } catch(e){ console.error("Error get cloud logs:", e); }
-            } else { 
-                logs = getLocalLogs().map(l => ({...l, isCloud: false, dateStr: new Date(l.timestamp || Date.now()).toLocaleString('id-ID')})); 
+            ui.logs.innerHTML = '<div style="text-align:center; padding:12px; font-size:12px;">Memuat data...</div>';
+            let allLogs = [];
+
+            // 1. Ambil Data Lokal
+            const localData = getLocalLogs().map(l => ({
+                ...l, 
+                isCloud: false, 
+                rawTime: new Date(l.timestamp || Date.now()).getTime(),
+                dateStr: new Date(l.timestamp || Date.now()).toLocaleString('id-ID')
+            }));
+            allLogs.push(...localData);
+
+            // 2. Ambil Data Cloud (Semua Dokumen)
+            try {
+                const q = query(collection(db, "work_logs"), orderBy("createdAt", "desc"));
+                const snap = await getDocs(q);
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const rawTime = data.createdAt?.toDate ? data.createdAt.toDate().getTime() : Date.now();
+                    const dateStr = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString('id-ID') : new Date().toLocaleString('id-ID');
+                    allLogs.push({...data, isCloud: true, rawTime, dateStr});
+                });
+            } catch(e) {
+                console.warn("Gagal memuat dari Cloud. Pastikan rule Firestore sudah disetting public.", e);
             }
+
+            // Urutkan semua data dari yang terbaru berdasarkan waktu
+            allLogs.sort((a, b) => b.rawTime - a.rawTime);
+
+            ui.logs.innerHTML = '';
+            if (!allLogs.length) return ui.logs.innerHTML = `<div style="text-align:center; color:var(--subtext); font-size:12px; padding:12px;">Belum ada riwayat kerja tersimpan.</div>`;
             
-            if (!logs.length) return ui.logs.innerHTML = `<div style="text-align:center; color:var(--subtext); font-size:12px; padding:12px;">Belum ada riwayat kerja.</div>`;
-            
-            logs.forEach(l => {
+            allLogs.forEach(l => {
                 const doc = l.docLink ? `<a href="${l.docLink.startsWith('http') ? l.docLink : 'https://'+l.docLink}" target="_blank" class="log-doc">Link Dokumen</a>` : '';
                 ui.logs.innerHTML += `
                     <div class="log-item">
@@ -390,9 +290,20 @@
             
             await showCustomModal("Simpan Riwayat", form, [
                 { text: 'Simpan', class: 'modal-btn-green', value: async () => {
-                    const d = { userId: currentUser?.uid, durationFormatted: formatSec(sec), secondsWorked: sec, taskDescription: document.getElementById('m-task').value.trim(), docLink: document.getElementById('m-doc').value.trim() };
-                    if(currentUser) { d.createdAt = serverTimestamp(); await addDoc(collection(db, "work_logs"), d); }
-                    else { d.timestamp = new Date().toISOString(); const ls = getLocalLogs(); ls.unshift(d); localStorage.setItem('flowguard_logs', JSON.stringify(ls)); }
+                    const d = { durationFormatted: formatSec(sec), secondsWorked: sec, taskDescription: document.getElementById('m-task').value.trim(), docLink: document.getElementById('m-doc').value.trim() };
+                    
+                    try {
+                        // Coba simpan ke Cloud terlebih dahulu
+                        d.createdAt = serverTimestamp(); 
+                        await addDoc(collection(db, "work_logs"), d); 
+                    } catch(e) {
+                        // Jika Cloud gagal (karena offline atau rules belum public), simpan ke lokal
+                        d.timestamp = new Date().toISOString(); 
+                        const ls = getLocalLogs(); 
+                        ls.unshift(d); 
+                        localStorage.setItem('flowguard_logs', JSON.stringify(ls)); 
+                    }
+                    
                     renderLogs();
                 }},
                 { text: 'Buang', class: 'modal-btn-secondary', value: ()=>false }

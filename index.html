@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Meta CSP yang ditambahkan sesuai permintaan Anda dan disesuaikan untuk Firebase -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:;">
+    <!-- Meta CSP Final: Mengizinkan Firebase Auth, Firestore, Font, dan Script Internal -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:;">
     
     <title>FlowGuard - Worktime & Tracker</title>
     
@@ -47,11 +47,6 @@
         .input-field:focus, .textarea-field:focus { border-color: var(--btn-blue); }
         .textarea-field { resize: vertical; min-height: 60px; }
         
-        .input-group { display: flex; align-items: center; background: var(--bg-frame); border: 1px solid var(--border-color); border-radius: 8px; padding-right: 12px; transition: 0.2s; }
-        .input-group:focus-within { border-color: var(--btn-blue); }
-        .input-group .input-field { border: none; border-radius: 8px 0 0 8px; flex: 1; }
-        .input-group span { color: var(--subtext); font-size: 12px; font-weight: 500; }
-        
         .status-frame { background: var(--bg-frame); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; min-height: 160px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; }
         .status-header { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--subtext); margin-bottom: 8px; }
         .pulse-dot { width: 8px; height: 8px; background: var(--subtext); border-radius: 50%; }
@@ -83,12 +78,13 @@
         .modal-btn-primary { background: var(--btn-blue); color: #11111b; }
         .modal-btn-green { background: var(--btn-green); color: #11111b; }
         .modal-btn-secondary { background: var(--bg-input); color: var(--fg-text); }
-        .footer { text-align: center; font-size: 11px; color: var(--subtext); opacity: 0.7; }
+        .footer { text-align: center; font-size: 11px; color: var(--subtext); opacity: 0.7; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <!-- Header -->
         <div class="header">
             <div class="header-brand">
                 <img src="FlowGuard Logo's.png" alt="Logo" class="header-logo-img" onerror="this.style.display='none'">
@@ -99,6 +95,7 @@
             </div>
         </div>
 
+        <!-- Mode Cepat -->
         <div class="card">
             <div class="card-title">Quick Mode</div>
             <div class="preset-grid">
@@ -107,6 +104,7 @@
             </div>
         </div>
 
+        <!-- Mode Kustom -->
         <div class="card">
             <div class="card-title">Custom Mode</div>
             <div class="custom-form">
@@ -118,6 +116,7 @@
             </div>
         </div>
 
+        <!-- Status Program (Timer) -->
         <div class="status-frame">
             <div class="status-header"><div id="pulse-dot" class="pulse-dot"></div><span>System Status</span></div>
             <div id="label-status" class="label-status">Status program akan muncul di sini...</div>
@@ -126,25 +125,24 @@
             <button id="btn-stop-work" class="btn btn-stop">Stop Working & Save Log</button>
         </div>
 
+        <!-- Log Pekerjaan -->
         <div class="card">
             <div class="card-title">Riwayat Kerja</div>
             <div class="logs-container" id="logs-container"></div>
         </div>
 
+        <!-- Footer -->
         <div class="footer">© 2026 Jembar Muhammad Firdiana.</div>
     </div>
 
-    <!-- Modal Khusus Auth -->
+    <!-- Modal Khusus Auth (Login/Register) -->
     <div id="auth-modal" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title">Identitas Akun</div>
             <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:18px;">
                 <div class="form-group">
-                    <label>Nama Akun (Tanpa Spasi)</label>
-                    <div class="input-group">
-                        <input type="text" id="auth-username" class="input-field" placeholder="contoh: jembar">
-                        <span>@gmail.com</span>
-                    </div>
+                    <label>Username / Nama Pengguna (Tanpa Spasi)</label>
+                    <input type="text" id="auth-username" class="input-field" placeholder="contoh: jembar">
                 </div>
                 <div class="form-group">
                     <label>Password</label>
@@ -159,7 +157,7 @@
         </div>
     </div>
 
-    <!-- Modal Standar Sistem -->
+    <!-- Modal Standar Sistem (Dialog Timer) -->
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-box">
             <div id="modal-title" class="modal-title">FlowGuard</div>
@@ -168,11 +166,13 @@
         </div>
     </div>
 
+    <!-- LOGIKA JAVASCRIPT & FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
+        // Konfigurasi Firebase (Project Anda)
         const firebaseConfig = {
             apiKey: "AIzaSyDa1BQzIYtMu5kDmWZyd-DiludUqrmQZC0",
             authDomain: "flowguard-web.firebaseapp.com",
@@ -184,8 +184,15 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // Paksa Persistensi agar tidak logout sendiri (terutama di incognito)
+        setPersistence(auth, browserLocalPersistence).catch((error) => {
+            console.warn("Sistem penyimpanan sesi diblokir (mungkin Incognito). Anda mungkin harus login ulang setelah me-refresh.");
+        });
+
+        // Variabel Global
         let currentUser = null, isRunning = false, countdownInterval = null, alarmInterval = null, workStartTime = null, audioCtx = null;
 
+        // Elemen UI
         const ui = {
             authContainer: document.getElementById('auth-container'),
             preset1: document.getElementById('btn-preset-1'), preset2: document.getElementById('btn-preset-2'),
@@ -198,7 +205,7 @@
             authModal: document.getElementById('auth-modal'), authUsername: document.getElementById('auth-username'), authPass: document.getElementById('auth-password')
         };
 
-        // --- SISTEM BACA LOG ANTI CRASH ---
+        // --- SISTEM BACA LOG LOKAL ---
         const getLocalLogs = () => {
             try {
                 const data = localStorage.getItem('flowguard_logs');
@@ -212,6 +219,7 @@
             }
         };
 
+        // --- SISTEM AUTENTIKASI UI ---
         function toggleAuthModal(show) {
             ui.authUsername.value = ''; ui.authPass.value = '';
             show ? ui.authModal.classList.add('active') : ui.authModal.classList.remove('active');
@@ -219,37 +227,53 @@
 
         document.getElementById('btn-auth-close').onclick = () => toggleAuthModal(false);
 
+        // Fungsi Login
         document.getElementById('btn-auth-login').onclick = async () => {
             const user = ui.authUsername.value.trim().replace(/\s/g, '');
             const pass = ui.authPass.value;
-            if(!user || !pass) return alert("Harap isi Nama Akun dan Password!");
+            if(!user || !pass) return alert("Harap isi Username dan Password!");
+            
+            const btn = document.getElementById('btn-auth-login');
+            btn.disabled = true; btn.textContent = "Memproses...";
             
             try {
                 ui.lblStatus.textContent = "Sedang login...";
-                await signInWithEmailAndPassword(auth, `${user}@gmail.com`, pass);
+                await signInWithEmailAndPassword(auth, `${user}@flowguard.com`, pass); 
                 toggleAuthModal(false);
                 ui.lblStatus.textContent = "Login berhasil!";
             } catch(e) {
-                alert("Gagal masuk. Periksa kembali akun atau password Anda.");
+                if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') alert("Username atau password salah!");
+                else if (e.code === 'auth/network-request-failed') alert("Koneksi terputus. Matikan AdBlock atau periksa koneksi internet.");
+                else alert("Gagal masuk: " + e.message);
                 ui.lblStatus.textContent = "Gagal login.";
+            } finally {
+                btn.disabled = false; btn.textContent = "Masuk";
             }
         };
 
+        // Fungsi Register
         document.getElementById('btn-auth-register').onclick = async () => {
             const user = ui.authUsername.value.trim().replace(/\s/g, '');
             const pass = ui.authPass.value;
-            if(!user || pass.length < 6) return alert("Nama akun wajib diisi & password minimal 6 karakter!");
+            if(!user || pass.length < 6) return alert("Username wajib diisi & password minimal 6 karakter!");
+            
+            const btn = document.getElementById('btn-auth-register');
+            btn.disabled = true; btn.textContent = "Memproses...";
             
             try {
-                await createUserWithEmailAndPassword(auth, `${user}@gmail.com`, pass);
+                await createUserWithEmailAndPassword(auth, `${user}@flowguard.com`, pass);
                 toggleAuthModal(false);
-                alert("Akun berhasil didaftarkan dan Anda sudah masuk!");
+                alert("Akun berhasil didaftarkan dan Anda sudah otomatis masuk!");
             } catch(e) {
-                if(e.code === 'auth/email-already-in-use') alert("Nama akun ini sudah dipakai, silakan gunakan yang lain atau klik Masuk.");
+                if(e.code === 'auth/email-already-in-use') alert("Username ini sudah dipakai, silakan gunakan yang lain.");
+                else if (e.code === 'auth/network-request-failed') alert("Koneksi diblokir oleh browser. Periksa ekstensi (seperti AdBlock).");
                 else alert("Gagal daftar: " + e.message);
+            } finally {
+                btn.disabled = false; btn.textContent = "Daftar";
             }
         };
 
+        // Pemantau Sesi Login
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
@@ -264,6 +288,7 @@
             renderLogs();
         });
 
+        // --- SISTEM AUDIO DAN WAKTU ---
         function initAudio() {
             if (!audioCtx) { const AudioContext = window.AudioContext || window.webkitAudioContext; if (AudioContext) audioCtx = new AudioContext(); }
             if (audioCtx?.state === 'suspended') audioCtx.resume();
@@ -318,6 +343,7 @@
             });
         }
         
+        // --- SISTEM PENYIMPANAN LOG ---
         async function syncLocalLogsToCloud() {
             if (!currentUser) return;
             const locals = getLocalLogs(); if (!locals.length) return;
@@ -374,6 +400,7 @@
             ui.lblStatus.textContent = "Sesi dihentikan."; ui.lblSys.textContent = ""; ui.lblBack.textContent = ""; setUILock(false);
         };
 
+        // --- MESIN UTAMA TIMER ---
         async function processSession(w, b, bTxt) {
             let hour = 1;
             while(isRunning) {
@@ -412,6 +439,7 @@
             run(Math.round(h*3600), Math.round(b*3600), b>=1 ? `${b} jam` : `${b*60} menit`);
         };
 
+        // Render riwayat kerja awal saat web dimuat
         renderLogs();
     </script>
 </body>

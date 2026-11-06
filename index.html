@@ -140,19 +140,6 @@
 
     <!-- JAVASCRIPT & FIRESTORE DATABASE (TANPA AUTH) -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDa1BQzIYtMu5kDmWZyd-DiludUqrmQZC0",
-            authDomain: "flowguard-web.firebaseapp.com",
-            projectId: "flowguard-web",
-            storageBucket: "flowguard-web.firebasestorage.app"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
         let isRunning = false, countdownInterval = null, alarmInterval = null, workStartTime = null, audioCtx = null;
 
         const ui = {

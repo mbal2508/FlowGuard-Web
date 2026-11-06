@@ -57,6 +57,6 @@ Karena FlowGuard dibuat menggunakan *pure HTML, CSS, dan JavaScript* murni tanpa
 ---
 
 <div align="center">
-  <p>Dibuat dengan ❤️ oleh <strong>Jembar Muhammad Firdiana</strong></p>
+  <p>Dibuat oleh <strong>Jembar Muhammad Firdiana</strong></p>
   <p><em>Licensed under MIT License</em></p>
 </div>

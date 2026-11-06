@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Meta CSP yang aman dan bersih dari segala pemblokiran -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval';">
     
     <title>FlowGuard - Worktime & Tracker</title>
     
@@ -56,11 +55,14 @@
         .timer-badge { background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); padding: 6px 16px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--btn-blue); display: none; }
         
         .logs-container { display: flex; flex-direction: column; gap: 10px; max-height: 240px; overflow-y: auto; margin-top: 6px; }
-        .log-item { background: var(--bg-frame); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; font-size: 12px; }
-        .log-header { display: flex; justify-content: space-between; color: var(--subtext); font-size: 11px; margin-bottom: 6px; }
+        .log-item { background: var(--bg-frame); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; font-size: 12px; position: relative; }
+        .log-header { display: flex; justify-content: space-between; align-items: center; color: var(--subtext); font-size: 11px; margin-bottom: 6px; }
         .log-duration { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--btn-blue); }
-        .badge-cloud { background: rgba(166,227,161,0.2); color: var(--btn-green); font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; }
-        .badge-local { background: rgba(249,226,175,0.2); color: var(--accent-yellow); font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase;}
+        
+        .btn-delete-log { background: transparent; border: none; color: var(--btn-red); cursor: pointer; padding: 2px 6px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-delete-log:hover { background: rgba(243, 139, 168, 0.15); }
+        .btn-delete-log svg { width: 14px; height: 14px; fill: currentColor; }
+
         .log-doc { color: var(--btn-green); font-size: 11px; text-decoration: none; word-break: break-all; display: block; margin-top: 4px;}
         
         /* Modals */
@@ -75,6 +77,7 @@
         .modal-btn-primary { background: var(--btn-blue); color: #11111b; }
         .modal-btn-green { background: var(--btn-green); color: #11111b; }
         .modal-btn-secondary { background: var(--bg-input); color: var(--fg-text); }
+        .modal-btn-danger { background: var(--btn-red); color: #11111b; }
         .footer { text-align: center; font-size: 11px; color: var(--subtext); opacity: 0.7; margin-bottom: 20px; }
     </style>
 </head>
@@ -138,8 +141,8 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT & FIRESTORE DATABASE (TANPA AUTH) -->
-    <script type="module">
+    <!-- LOGIKA JAVASCRIPT (LOKAL & TANPA FIREBASE) -->
+    <script>
         let isRunning = false, countdownInterval = null, alarmInterval = null, workStartTime = null, audioCtx = null;
 
         const ui = {
@@ -218,44 +221,71 @@
             });
         }
 
-        async function renderLogs() {
-            ui.logs.innerHTML = '<div style="text-align:center; padding:12px; font-size:12px;">Memuat data...</div>';
-            let allLogs = [];
+        // --- HAPUS LOG DENGAN KONFIRMASI "hapus" ---
+        async function deleteLogItem(index) {
+            const confirmMsg = `
+                <div>Ketik <strong>hapus</strong> untuk mengonfirmasi penghapusan riwayat kerja ini:</div>
+                <div style="margin-top: 10px;">
+                    <input type="text" id="confirm-delete-input" class="input-field" placeholder="Ketik hapus di sini">
+                </div>
+            `;
 
-            // Ambil dari LocalStorage
-            const localData = getLocalLogs().map(l => ({
-                ...l, isCloud: false, 
+            const confirmed = await showCustomModal("Konfirmasi Hapus", confirmMsg, [
+                { 
+                    text: 'Hapus', 
+                    class: 'modal-btn-danger', 
+                    value: () => {
+                        const inputVal = document.getElementById('confirm-delete-input').value.trim();
+                        return inputVal === 'hapus';
+                    }
+                },
+                { text: 'Batal', class: 'modal-btn-secondary', value: () => false }
+            ]);
+
+            if (confirmed) {
+                let logs = getLocalLogs();
+                logs.splice(index, 1);
+                localStorage.setItem('flowguard_logs', JSON.stringify(logs));
+                renderLogs();
+            } else {
+                showAlert("Penghapusan dibatalkan karena teks konfirmasi tidak sesuai.", "Gagal Hapus");
+            }
+        }
+
+        async function renderLogs() {
+            ui.logs.innerHTML = '';
+            let logs = getLocalLogs().map((l, idx) => ({
+                ...l, 
+                originalIndex: idx,
                 rawTime: new Date(l.timestamp || Date.now()).getTime(),
                 dateStr: new Date(l.timestamp || Date.now()).toLocaleString('id-ID')
             }));
-            allLogs.push(...localData);
 
-            // Ambil dari Firestore Cloud
-            try {
-                const q = query(collection(db, "work_logs"), orderBy("createdAt", "desc"));
-                const snap = await getDocs(q);
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    const rawTime = data.createdAt?.toDate ? data.createdAt.toDate().getTime() : Date.now();
-                    const dateStr = data.createdAt?.toDate ? data.createdAt.toDate().toLocaleString('id-ID') : new Date().toLocaleString('id-ID');
-                    allLogs.push({...data, isCloud: true, rawTime, dateStr});
-                });
-            } catch(e) {
-                console.warn("Cloud offline atau rules belum disetting, membaca data lokal.", e);
-            }
+            logs.sort((a, b) => b.rawTime - a.rawTime);
 
-            allLogs.sort((a, b) => b.rawTime - a.rawTime);
-
-            ui.logs.innerHTML = '';
-            if (!allLogs.length) return ui.logs.innerHTML = `<div style="text-align:center; color:var(--subtext); font-size:12px; padding:12px;">Belum ada riwayat kerja tersimpan.</div>`;
+            if (!logs.length) return ui.logs.innerHTML = `<div style="text-align:center; color:var(--subtext); font-size:12px; padding:12px;">Belum ada riwayat kerja tersimpan.</div>`;
             
-            allLogs.forEach(l => {
+            logs.forEach(l => {
                 const doc = l.docLink ? `<a href="${l.docLink.startsWith('http') ? l.docLink : 'https://'+l.docLink}" target="_blank" class="log-doc">Link Dokumen</a>` : '';
-                ui.logs.innerHTML += `
-                    <div class="log-item">
-                        <div class="log-header"><span>${l.dateStr}</span><div style="display:flex;gap:6px;align-items:center"><span class="log-duration">${l.durationFormatted || '00:00:00'}</span><span class="badge-cloud ${l.isCloud?'':'badge-local'}">${l.isCloud?'Cloud':'Lokal'}</span></div></div>
-                        <div style="font-weight:600;color:var(--fg-text);">${l.taskDescription || 'Tanpa deskripsi'}</div>${doc}
-                    </div>`;
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'log-item';
+                itemDiv.innerHTML = `
+                    <div class="log-header">
+                        <span>${l.dateStr}</span>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <span class="log-duration">${l.durationFormatted || '00:00:00'}</span>
+                            <button class="btn-delete-log" title="Hapus Riwayat" data-index="${l.originalIndex}">
+                                <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div style="font-weight:600;color:var(--fg-text);">${l.taskDescription || 'Tanpa deskripsi'}</div>
+                    ${doc}
+                `;
+
+                itemDiv.querySelector('.btn-delete-log').onclick = () => deleteLogItem(l.originalIndex);
+                ui.logs.appendChild(itemDiv);
             });
         }
 
@@ -268,17 +298,16 @@
             
             await showCustomModal("Simpan Riwayat", form, [
                 { text: 'Simpan', class: 'modal-btn-green', value: async () => {
-                    const d = { durationFormatted: formatSec(sec), secondsWorked: sec, taskDescription: document.getElementById('m-task').value.trim(), docLink: document.getElementById('m-doc').value.trim() };
-                    
-                    try {
-                        d.createdAt = serverTimestamp(); 
-                        await addDoc(collection(db, "work_logs"), d); 
-                    } catch(e) {
-                        d.timestamp = new Date().toISOString(); 
-                        const ls = getLocalLogs(); 
-                        ls.unshift(d); 
-                        localStorage.setItem('flowguard_logs', JSON.stringify(ls)); 
-                    }
+                    const d = { 
+                        timestamp: new Date().toISOString(),
+                        durationFormatted: formatSec(sec), 
+                        secondsWorked: sec, 
+                        taskDescription: document.getElementById('m-task').value.trim(), 
+                        docLink: document.getElementById('m-doc').value.trim() 
+                    };
+                    const ls = getLocalLogs(); 
+                    ls.unshift(d); 
+                    localStorage.setItem('flowguard_logs', JSON.stringify(ls)); 
                     renderLogs();
                 }},
                 { text: 'Buang', class: 'modal-btn-secondary', value: ()=>false }

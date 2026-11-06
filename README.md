@@ -7,7 +7,7 @@
 ---
 
 ## 🚀 Tentang FlowGuard
-**FlowGuard** adalah aplikasi web berbasis *single-file* (`index.html`) yang dirancang untuk membantumu tetap fokus, menjaga kesehatan dengan pengingat hidrasi, serta melacak riwayat kerja secara lokal langsung di perangkatmu tanpa ribet!
+**FlowGuard** adalah aplikasi web yang dirancang untuk membantumu tetap fokus, menjaga kesehatan dengan pengingat hidrasi, serta melacak riwayat kerja secara lokal langsung di perangkatmu tanpa ribet!
 
 ---
 
@@ -45,14 +45,6 @@ Selamat datang di FlowGuard! Berikut adalah cara mudah menggunakan aplikasi ini:
 ### 4. Menghapus Riwayat Kerja
 * Ingin menghapus catatan kerja tertentu? Cari riwayat yang ingin dihapus, lalu klik **ikon tempat sampah** di sebelah kanan atas kartu riwayat tersebut.
 * Kotak konfirmasi keamanan akan muncul. Ketik kata **`hapus`** di dalam kolom input lalu konfirmasikan untuk menghapusnya secara permanen.
-
----
-
-## 🛠️ Menjalankan Secara Lokal (Developer)
-Karena FlowGuard dibuat menggunakan *pure HTML, CSS, dan JavaScript* murni tanpa dependensi rumit:
-1. Clone atau unduh repository ini.
-2. Pastikan file gambar logo (`FlowGuard Logo's.png`) berada di folder yang sama dengan `index.html`.
-3. Buka file `index.html` langsung menggunakan browser favoritmu (Chrome, Edge, Firefox, dll).
 
 ---
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Meta CSP: Diperbarui agar mengizinkan script dari luar (Firebase, Google Fonts, dll) -->
+    <!-- Meta CSP yang aman dan bersih dari segala pemblokiran -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval';">
     
     <title>FlowGuard - Worktime & Tracker</title>
@@ -129,7 +129,7 @@
         <div class="footer">© 2026 Jembar Muhammad Firdiana.</div>
     </div>
 
-    <!-- Modal Standar Sistem (Dialog Timer) -->
+    <!-- Modal Standar Sistem -->
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-box">
             <div id="modal-title" class="modal-title">FlowGuard</div>
@@ -138,12 +138,11 @@
         </div>
     </div>
 
-    <!-- LOGIKA JAVASCRIPT & FIREBASE -->
+    <!-- JAVASCRIPT & FIRESTORE DATABASE (TANPA AUTH) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-        // Konfigurasi Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDa1BQzIYtMu5kDmWZyd-DiludUqrmQZC0",
             authDomain: "flowguard-web.firebaseapp.com",
@@ -154,10 +153,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Variabel Global
         let isRunning = false, countdownInterval = null, alarmInterval = null, workStartTime = null, audioCtx = null;
 
-        // Elemen UI
         const ui = {
             preset1: document.getElementById('btn-preset-1'), preset2: document.getElementById('btn-preset-2'),
             customBtn: document.getElementById('btn-custom'), stopBtn: document.getElementById('btn-stop-work'),
@@ -168,7 +165,6 @@
             logs: document.getElementById('logs-container')
         };
 
-        // --- SISTEM BACA LOG LOKAL ---
         const getLocalLogs = () => {
             try {
                 const data = localStorage.getItem('flowguard_logs');
@@ -181,7 +177,6 @@
             }
         };
 
-        // --- SISTEM AUDIO DAN WAKTU ---
         function initAudio() {
             if (!audioCtx) { const AudioContext = window.AudioContext || window.webkitAudioContext; if (AudioContext) audioCtx = new AudioContext(); }
             if (audioCtx?.state === 'suspended') audioCtx.resume();
@@ -236,21 +231,19 @@
             });
         }
 
-        // --- SISTEM PENGAMBILAN & PENYIMPANAN LOG ---
         async function renderLogs() {
             ui.logs.innerHTML = '<div style="text-align:center; padding:12px; font-size:12px;">Memuat data...</div>';
             let allLogs = [];
 
-            // 1. Ambil Data Lokal
+            // Ambil dari LocalStorage
             const localData = getLocalLogs().map(l => ({
-                ...l, 
-                isCloud: false, 
+                ...l, isCloud: false, 
                 rawTime: new Date(l.timestamp || Date.now()).getTime(),
                 dateStr: new Date(l.timestamp || Date.now()).toLocaleString('id-ID')
             }));
             allLogs.push(...localData);
 
-            // 2. Ambil Data Cloud (Semua Dokumen)
+            // Ambil dari Firestore Cloud
             try {
                 const q = query(collection(db, "work_logs"), orderBy("createdAt", "desc"));
                 const snap = await getDocs(q);
@@ -261,10 +254,9 @@
                     allLogs.push({...data, isCloud: true, rawTime, dateStr});
                 });
             } catch(e) {
-                console.warn("Gagal memuat dari Cloud. Pastikan rule Firestore sudah disetting public.", e);
+                console.warn("Cloud offline atau rules belum disetting, membaca data lokal.", e);
             }
 
-            // Urutkan semua data dari yang terbaru berdasarkan waktu
             allLogs.sort((a, b) => b.rawTime - a.rawTime);
 
             ui.logs.innerHTML = '';
@@ -292,17 +284,14 @@
                     const d = { durationFormatted: formatSec(sec), secondsWorked: sec, taskDescription: document.getElementById('m-task').value.trim(), docLink: document.getElementById('m-doc').value.trim() };
                     
                     try {
-                        // Coba simpan ke Cloud terlebih dahulu
                         d.createdAt = serverTimestamp(); 
                         await addDoc(collection(db, "work_logs"), d); 
                     } catch(e) {
-                        // Jika Cloud gagal (karena offline atau rules belum public), simpan ke lokal
                         d.timestamp = new Date().toISOString(); 
                         const ls = getLocalLogs(); 
                         ls.unshift(d); 
                         localStorage.setItem('flowguard_logs', JSON.stringify(ls)); 
                     }
-                    
                     renderLogs();
                 }},
                 { text: 'Buang', class: 'modal-btn-secondary', value: ()=>false }
@@ -310,7 +299,6 @@
             ui.lblStatus.textContent = "Sesi dihentikan."; ui.lblSys.textContent = ""; ui.lblBack.textContent = ""; setUILock(false);
         };
 
-        // --- MESIN UTAMA TIMER ---
         async function processSession(w, b, bTxt) {
             let hour = 1;
             while(isRunning) {
@@ -349,7 +337,6 @@
             run(Math.round(h*3600), Math.round(b*3600), b>=1 ? `${b} jam` : `${b*60} menit`);
         };
 
-        // Render riwayat kerja awal saat web dimuat
         renderLogs();
     </script>
 </body>

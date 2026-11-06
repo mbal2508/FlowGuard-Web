@@ -129,7 +129,7 @@
         </div>
 
         <!-- Footer -->
-        <div class="footer">© 2026 Jembar Muhammad Firdiana. All rights reserved.</div>
+        <div class="footer">© 2026 Jembar Muhammad Firdiana.</div>
     </div>
 
     <!-- Modal Standar Sistem -->
@@ -141,9 +141,10 @@
         </div>
     </div>
 
-    <!-- LOGIKA JAVASCRIPT (LOKAL & TANPA FIREBASE) -->
+    <!-- LOGIKA JAVASCRIPT -->
     <script>
         let isRunning = false, countdownInterval = null, alarmInterval = null, workStartTime = null, audioCtx = null;
+        let activeWorkDurationSec = 0; // Menyimpan total detik murni waktu kerja yang sudah diselesaikan
 
         const ui = {
             preset1: document.getElementById('btn-preset-1'), preset2: document.getElementById('btn-preset-2'),
@@ -221,7 +222,6 @@
             });
         }
 
-        // --- HAPUS LOG DENGAN KONFIRMASI "hapus" ---
         async function deleteLogItem(index) {
             const confirmMsg = `
                 <div>Ketik <strong>hapus</strong> untuk mengonfirmasi penghapusan riwayat kerja ini:</div>
@@ -291,8 +291,11 @@
 
         ui.stopBtn.onclick = async () => {
             initAudio(); isRunning = false; if(countdownInterval) clearInterval(countdownInterval); if(alarmInterval) clearInterval(alarmInterval);
-            const sec = workStartTime ? Math.max(0, Math.floor((Date.now() - workStartTime)/1000)) : 0;
-            const form = `<div style="display:flex;flex-direction:column;gap:10px;"><div><strong>Durasi Kerja:</strong> ${formatSec(sec)}</div>
+            
+            // Menggunakan akumulasi waktu kerja murni yang sudah dihitung, bukan selisih waktu sistem total
+            const finalSec = activeWorkDurationSec; 
+            
+            const form = `<div style="display:flex;flex-direction:column;gap:10px;"><div><strong>Durasi Kerja Murni:</strong> ${formatSec(finalSec)}</div>
                 <div class="form-group"><label>Apa yang dikerjakan?</label><textarea id="m-task" class="textarea-field"></textarea></div>
                 <div class="form-group"><label>Link Dokumen (Opsional)</label><input type="url" id="m-doc" class="input-field"></div></div>`;
             
@@ -300,8 +303,8 @@
                 { text: 'Simpan', class: 'modal-btn-green', value: async () => {
                     const d = { 
                         timestamp: new Date().toISOString(),
-                        durationFormatted: formatSec(sec), 
-                        secondsWorked: sec, 
+                        durationFormatted: formatSec(finalSec), 
+                        secondsWorked: finalSec, 
                         taskDescription: document.getElementById('m-task').value.trim(), 
                         docLink: document.getElementById('m-doc').value.trim() 
                     };
@@ -315,14 +318,21 @@
             ui.lblStatus.textContent = "Sesi dihentikan."; ui.lblSys.textContent = ""; ui.lblBack.textContent = ""; setUILock(false);
         };
 
-        async function processSession(w, b, bTxt) {
+        async function processSession(workSec, breakSec, bTxt) {
             let hour = 1;
             while(isRunning) {
                 ui.lblStatus.textContent = `===== Information =====\nHour #${hour} | Started: ${new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}\n=====================`;
                 if(new Date().getHours() < 5) if(await showCustomModal("Warning", "Past midnight. Sleep?", [{text:'OK (Shutdown)', value:()=>'Y', class:'modal-btn-primary'}, {text:'No', value:()=>'N', class:'modal-btn-secondary'}]) === 'Y') return (isRunning = false, setUILock(false));
                 
-                await startCountdown(w); if(!isRunning) break;
-                await showAlert(w >= 3600 ? "One hour has passed..." : "Work time has passed..."); if(!isRunning) break;
+                // Sesi Kerja Berjalan
+                await startCountdown(workSec); 
+                if(!isRunning) break;
+                
+                // Tambahkan waktu kerja murni yang berhasil diselesaikan
+                activeWorkDurationSec += workSec;
+
+                await showAlert(workSec >= 3600 ? "One hour has passed..." : "Work time has passed..."); 
+                if(!isRunning) break;
                 
                 while(isRunning) {
                     if(await showCustomModal("Hydration", "Have you drank water?", [{text:'Yes', value:()=>'Y', class:'modal-btn-green'},{text:'Not yet', value:()=>'N', class:'modal-btn-secondary'}]) === 'Y') {
@@ -332,19 +342,31 @@
                 }
                 if(!isRunning) break;
 
-                if(b > 0) {
+                // Sesi Istirahat (Waktu istirahat TIDAK ditambahkan ke activeWorkDurationSec)
+                if(breakSec > 0) {
                     await showAlert(`Time to break for ${bTxt}..`); if(!isRunning) break;
                     ui.lblSys.textContent = `SYSTEM : Resting ${bTxt}..`; ui.lblSys.className = "sys-log yellow";
-                    const ret = new Date(Date.now() + b*1000);
+                    const ret = new Date(Date.now() + breakSec*1000);
                     ui.lblBack.textContent = `SYSTEM : Back at ${ret.getHours().toString().padStart(2,'0')}:${ret.getMinutes().toString().padStart(2,'0')}`;
-                    await startCountdown(b); if(!isRunning) break;
+                    
+                    await startCountdown(breakSec); 
+                    if(!isRunning) break;
+                    
                     await showAlert("Break is over, back to work boss!"); ui.lblBack.textContent = "";
                 }
                 ui.lblSys.textContent = "SYSTEM : Back to work boss!"; ui.lblSys.className = "sys-log green"; hour++;
             }
         }
 
-        const run = (w, b, txt) => { initAudio(); isRunning = true; workStartTime = Date.now(); setUILock(true); processSession(w, b, txt); };
+        const run = (w, b, txt) => { 
+            initAudio(); 
+            isRunning = true; 
+            workStartTime = Date.now(); 
+            activeWorkDurationSec = 0; // Reset hitungan waktu kerja murni dari awal
+            setUILock(true); 
+            processSession(w, b, txt); 
+        };
+
         ui.preset1.onclick = () => run(3600, 1800, "30 minutes");
         ui.preset2.onclick = () => run(3600, 0, "0 minutes");
         ui.customBtn.onclick = () => {
